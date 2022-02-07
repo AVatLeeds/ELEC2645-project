@@ -1,0 +1,6 @@
+[
+  {
+    "directory": "/home/arthur/Documents/stm32_test",
+    "arguments": ["/usr/bin/arm-none-eabi-gcc", "-c", "-g0", "-O0", "-Wall", "-Wextra", "-mthumb", "mno-thumb-interwork", "mcpu=cortex-m4", "-fsingle-precision-constant"]
+  }
+]

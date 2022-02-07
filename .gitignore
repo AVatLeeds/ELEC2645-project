@@ -1,0 +1,6 @@
+archive_\(initial_findings\)/
+*.o
+*.bin
+*.map
+
+*.code-workspace
