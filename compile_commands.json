@@ -1,6 +1,63 @@
 [
-  {
-    "directory": "/home/arthur/Documents/stm32_test",
-    "arguments": ["/usr/bin/arm-none-eabi-gcc", "-c", "-g0", "-O0", "-Wall", "-Wextra", "-mthumb", "mno-thumb-interwork", "mcpu=cortex-m4", "-fsingle-precision-constant"]
-  }
+    {
+        "arguments": [
+            "arm-none-eabi-g++",
+            "-c",
+            "-g0",
+            "-Os",
+            "-Wall",
+            "-Wextra",
+            "-mthumb",
+            "-mcpu=cortex-m4",
+            "-nostartfiles",
+            "-fno-exceptions",
+            "-r",
+            "system.h",
+            "-o",
+            "project.o",
+            "main.cpp"
+        ],
+        "directory": "/home/arthur/Documents/stm32_test",
+        "file": "main.cpp"
+    },
+    {
+        "arguments": [
+            "arm-none-eabi-g++",
+            "-c",
+            "-g0",
+            "-Os",
+            "-Wall",
+            "-Wextra",
+            "-mthumb",
+            "-mcpu=cortex-m4",
+            "-nostartfiles",
+            "-fno-exceptions",
+            "-o",
+            "startup_stm32l476rg.o",
+            "startup_stm32l476rg.c"
+        ],
+        "directory": "/home/arthur/Documents/stm32_test",
+        "file": "startup_stm32l476rg.c"
+    },
+    {
+        "arguments": [
+            "arm-none-eabi-g++",
+            "-c",
+            "-g0",
+            "-Os",
+            "-Wall",
+            "-Wextra",
+            "-mthumb",
+            "-mcpu=cortex-m4",
+            "-nostartfiles",
+            "-fno-exceptions",
+            "-r",
+            "system.h",
+            "-o",
+            "project.o",
+            "system.cpp"
+        ],
+        "directory": "/home/arthur/Documents/stm32_test",
+        "file": "system.cpp"
+    }
 ]
