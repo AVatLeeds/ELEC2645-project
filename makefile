@@ -1,31 +1,36 @@
 CC = arm-none-eabi-gcc
 
-CFLAGS =	-g0 \
-			-Os \
-			-Wall \
-			-Wextra \
-			-mthumb \
+CFLAGS =	-g0\
+			-Os\
+			-Wall\
+			-Wextra\
+			-mthumb\
 			-mno-thumb-interwork \
 			-mcpu=cortex-m4 \
-			-nostartfiles \
+			-nostartfiles\
 
 LD = arm-none-eabi-ld
 
-LDFLAGS =	-nostdlib \
-			-Map=firmware.map \
-			-T startup_stm32l476rg.ld
+LDFLAGS =	-nostdlib\
+			-Map=firmware.map\
+			-T startup_stm32l476rg.ld\
 
 STL = st-flash
 
+OBJS =	startup_stm32l476rg.o\
+		main.o\
+		system.o\
+
 firmware.bin: firmware.o
-	arm-none-eabi-objcopy -O binary firmware.o firmware.bin
+	arm-none-eabi-objcopy -O binary $^ $@
 
-firmware.o: startup_stm32l476rg.o main.o
-	$(LD) $(LDFLAGS) -o firmware.o startup_stm32l476rg.o main.o
-
-main.o: main.c
+firmware.o: $(OBJS)
+	$(LD) $(LDFLAGS) -o $@ $^
 
 startup_STM32L476RG.o: startup_stm32l476rg.c
+
+main.o: main.c
+system.o: system.c system.h
 
 flash:
 	st-flash erase
@@ -33,4 +38,4 @@ flash:
 	st-flash write firmware.bin 0x08000000
 
 clean:
-	rm main.o startup_stm32l476rg.o firmware.o firmware.bin firmware.map
+	rm *.o firmware.bin firmware.map
