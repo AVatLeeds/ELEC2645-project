@@ -1,4 +1,7 @@
 archive_\(initial_findings\)/
+.cache/
+.vscode/
+
 *.o
 *.bin
 *.map
