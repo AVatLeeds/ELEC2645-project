@@ -1,4 +1,4 @@
-CC = arm-none-eabi-gcc
+CC = arm-none-eabi-g++
 
 CFLAGS =	-g0\
 			-Os\
@@ -8,6 +8,7 @@ CFLAGS =	-g0\
 			-mno-thumb-interwork \
 			-mcpu=cortex-m4 \
 			-nostartfiles\
+			-fno-exceptions #disabling c++ exception handling as otherwise causes a bunch of missing symbols
 
 LD = arm-none-eabi-ld
 
@@ -17,20 +18,16 @@ LDFLAGS =	-nostdlib\
 
 STL = st-flash
 
-OBJS =	startup_stm32l476rg.o\
-		main.o\
-		system.o\
-
 firmware.bin: firmware.o
 	arm-none-eabi-objcopy -O binary $^ $@
 
-firmware.o: $(OBJS)
+firmware.o: startup_stm32l476rg.o project.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 startup_STM32L476RG.o: startup_stm32l476rg.c
 
-main.o: main.c
-system.o: system.c system.h
+project.o: main.cpp system.cpp system.h
+	$(CC) $(CFLAGS) -r -o $@ $^
 
 flash:
 	st-flash erase

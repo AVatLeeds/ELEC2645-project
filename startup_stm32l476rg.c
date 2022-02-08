@@ -55,6 +55,7 @@ will be the bare minimum bring-up code to get arbitrary C (and hopefully C++) pr
 on the board. */
 
 #include <stdint.h>
+#include "system.h"
 
 /* The following macros define the start, size and end of the microcontrolers memories
 (stm32l476rg) as described in the reference manual (rm0351, section 2.2.2, Figure 3). */
@@ -102,7 +103,23 @@ interrupt handler functions which will override the default handler. The default
 will only be used if no other implementation is found by the compiler. */
 
 // reset interrupt handler
-void reset_handler(void);
+extern "C"
+{
+    void reset_handler(void);
+}
+
+/* WARNING! EXTREME CRUSTY. Default handler prototype has to be in an extern "C" block so that
+the c++ compiler will allow it to be linked in the ordinary C way rather than the C++ way. This
+is required in order for aliasing to be possible. Otherwise the c++ compiler mangles the symbol
+name at compile time, meaning the name can no longer be known a-priori and aliasing is no longer
+possible. 
+    As far as I understand, the reason the c++ compiler does this is to allow for overloading of
+the function but more reading about the c++ compiler and mangled names is required. */
+
+extern "C"
+{
+    void default_handler(void);
+}
 
 // low level interrupt handlers
 void non_maskable_interrupt_handler(void)   __attribute__((weak, alias("default_handler")));
@@ -113,7 +130,7 @@ void usage_fault(void)                      __attribute__((weak, alias("default_
 void SV_call(void)                          __attribute__((weak, alias("default_handler")));
 void debug(void)                            __attribute__((weak, alias("default_handler")));
 void pend_SV(void)                          __attribute__((weak, alias("default_handler")));
-void sys_tick(void)                         __attribute__((weak, alias("default_handler")));
+void sys_tick_handler(void)                         __attribute__((weak, alias("default_handler")));
 
 // interrupt service routines
 void ISR_window_watchdog(void)             __attribute__((weak, alias("default_handler")));
@@ -206,101 +223,101 @@ section in the output object file called ".vector_table". as far as I know the d
 beginning of the section name is not actually required, but rather a convention. (The linker
 script can be used to tell the linker where to place this section withing the final binary). */
 
-uint32_t vector_table[] __attribute__((section(".vector_table"))) = {
-    STACK_START,
-    (uint32_t)&reset_handler,
-    (uint32_t)&non_maskable_interrupt_handler,
-    (uint32_t)&hard_fault_interrupt_handler,
-    (uint32_t)&memory_manager_interrupt_handler,
-    (uint32_t)&bus_fault,
-    (uint32_t)&usage_fault,
+void * vector_table[] __attribute__((section(".vector_table"))) = {
+    (void *)STACK_START,
+    (void *)&reset_handler,
+    (void *)&non_maskable_interrupt_handler,
+    (void *)&hard_fault_interrupt_handler,
+    (void *)&memory_manager_interrupt_handler,
+    (void *)&bus_fault,
+    (void *)&usage_fault,
     0,
     0,
     0,
     0,
-    (uint32_t)&SV_call,
-    (uint32_t)&debug,
+    (void *)&SV_call,
+    (void *)&debug,
     0,
-    (uint32_t)&pend_SV,
-    (uint32_t)&sys_tick,
-    (uint32_t)&ISR_window_watchdog,
-    (uint32_t)&ISR_PVD_PVM,
-    (uint32_t)&ISR_realtime_clock_TAMP_STAMP,
-    (uint32_t)&ISR_realtime_clock_wakeup,
-    (uint32_t)&ISR_flash_global,
-    (uint32_t)&ISR_RCC_global,
-    (uint32_t)&ISR_EXT_line0,
-    (uint32_t)&ISR_EXT_line1,
-    (uint32_t)&ISR_EXT_line2,
-    (uint32_t)&ISR_EXT_line3,
-    (uint32_t)&ISR_EXT_line4,
-    (uint32_t)&ISR_EXT_line5,
-    (uint32_t)&ISR_DMA1_channel1,
-    (uint32_t)&ISR_DMA1_channel2,
-    (uint32_t)&ISR_DMA1_channel3,
-    (uint32_t)&ISR_DMA1_channel4,
-    (uint32_t)&ISR_DMA1_channel5,
-    (uint32_t)&ISR_DMA1_channel6,
-    (uint32_t)&ISR_DMA1_channel7,
-    (uint32_t)&ISR_ADC_1_and_2_global,
-    (uint32_t)&ISR_CAN1_transmit,
-    (uint32_t)&ISR_CAN1_receive0,
-    (uint32_t)&ISR_CAN1_receive1,
-    (uint32_t)&ISR_CAN1_SCE,
-    (uint32_t)&ISR_EXT_lines_9_to_5,
-    (uint32_t)&ISR_timer1_capture_compare,
-    (uint32_t)&ISR_timer2_global,
-    (uint32_t)&ISR_timer3_global,
-    (uint32_t)&ISR_timer4_global,
-    (uint32_t)&ISR_I2C1_event,
-    (uint32_t)&ISR_I2C1_error,
-    (uint32_t)&ISR_I2C2_event,
-    (uint32_t)&ISR_I2C2_error,
-    (uint32_t)&ISR_SPI1_global,
-    (uint32_t)&ISR_SPI2_global,
-    (uint32_t)&ISR_USART1_global,
-    (uint32_t)&ISR_USART2_global,
-    (uint32_t)&ISR_USART3_global,
-    (uint32_t)&ISR_EXT_lines_15_to_10,
-    (uint32_t)&ISR_realtime_clock_alarm,
-    (uint32_t)&ISR_DFSDM1_PLT3,
-    (uint32_t)&ISR_timer8_break,
-    (uint32_t)&ISR_timer8_update,
-    (uint32_t)&ISR_timer8_trigger,
-    (uint32_t)&ISR_timer8_capture_compare,
-    (uint32_t)&ISR_ADC3_global,
-    (uint32_t)&ISR_FMC,
-    (uint32_t)&ISR_SDMMC1,
-    (uint32_t)&ISR_timer5_global,
-    (uint32_t)&ISR_SPI3_global,
-    (uint32_t)&ISR_UART4_global,
-    (uint32_t)&ISR_UART5_global,
-    (uint32_t)&ISR_timer6_global,
-    (uint32_t)&ISR_timer7_global,
-    (uint32_t)&ISR_DMA2_channel1,
-    (uint32_t)&ISR_DMA2_channel2,
-    (uint32_t)&ISR_DMA2_channel3,
-    (uint32_t)&ISR_DMA2_channel4,
-    (uint32_t)&ISR_DMA2_channel5,
-    (uint32_t)&ISR_DFSDM1_FLT0,
-    (uint32_t)&ISR_DFSDM1_FLT1,
-    (uint32_t)&ISR_DFSDM1_FLT2,
-    (uint32_t)&ISR_COMP,
-    (uint32_t)&ISR_LPTIM1,
-    (uint32_t)&ISR_LPTIM2,
-    (uint32_t)&ISR_OTG_FS,
-    (uint32_t)&ISR_DMA2_channel6,
-    (uint32_t)&ISR_DMA2_channel7,
-    (uint32_t)&ISR_LPUART1,
-    (uint32_t)&ISR_QUADSPI1,
-    (uint32_t)&ISR_I2C3_event,
-    (uint32_t)&ISR_I2C3_error,
-    (uint32_t)&ISR_SAI1,
-    (uint32_t)&ISR_SAI2,
-    (uint32_t)&ISR_SWPMI1,
-    (uint32_t)&ISR_TSC,
-    (uint32_t)&ISR_LCD_global,
-    (uint32_t)&ISR_FPU
+    (void *)&pend_SV,
+    (void *)&sys_tick_handler,
+    (void *)&ISR_window_watchdog,
+    (void *)&ISR_PVD_PVM,
+    (void *)&ISR_realtime_clock_TAMP_STAMP,
+    (void *)&ISR_realtime_clock_wakeup,
+    (void *)&ISR_flash_global,
+    (void *)&ISR_RCC_global,
+    (void *)&ISR_EXT_line0,
+    (void *)&ISR_EXT_line1,
+    (void *)&ISR_EXT_line2,
+    (void *)&ISR_EXT_line3,
+    (void *)&ISR_EXT_line4,
+    (void *)&ISR_EXT_line5,
+    (void *)&ISR_DMA1_channel1,
+    (void *)&ISR_DMA1_channel2,
+    (void *)&ISR_DMA1_channel3,
+    (void *)&ISR_DMA1_channel4,
+    (void *)&ISR_DMA1_channel5,
+    (void *)&ISR_DMA1_channel6,
+    (void *)&ISR_DMA1_channel7,
+    (void *)&ISR_ADC_1_and_2_global,
+    (void *)&ISR_CAN1_transmit,
+    (void *)&ISR_CAN1_receive0,
+    (void *)&ISR_CAN1_receive1,
+    (void *)&ISR_CAN1_SCE,
+    (void *)&ISR_EXT_lines_9_to_5,
+    (void *)&ISR_timer1_capture_compare,
+    (void *)&ISR_timer2_global,
+    (void *)&ISR_timer3_global,
+    (void *)&ISR_timer4_global,
+    (void *)&ISR_I2C1_event,
+    (void *)&ISR_I2C1_error,
+    (void *)&ISR_I2C2_event,
+    (void *)&ISR_I2C2_error,
+    (void *)&ISR_SPI1_global,
+    (void *)&ISR_SPI2_global,
+    (void *)&ISR_USART1_global,
+    (void *)&ISR_USART2_global,
+    (void *)&ISR_USART3_global,
+    (void *)&ISR_EXT_lines_15_to_10,
+    (void *)&ISR_realtime_clock_alarm,
+    (void *)&ISR_DFSDM1_PLT3,
+    (void *)&ISR_timer8_break,
+    (void *)&ISR_timer8_update,
+    (void *)&ISR_timer8_trigger,
+    (void *)&ISR_timer8_capture_compare,
+    (void *)&ISR_ADC3_global,
+    (void *)&ISR_FMC,
+    (void *)&ISR_SDMMC1,
+    (void *)&ISR_timer5_global,
+    (void *)&ISR_SPI3_global,
+    (void *)&ISR_UART4_global,
+    (void *)&ISR_UART5_global,
+    (void *)&ISR_timer6_global,
+    (void *)&ISR_timer7_global,
+    (void *)&ISR_DMA2_channel1,
+    (void *)&ISR_DMA2_channel2,
+    (void *)&ISR_DMA2_channel3,
+    (void *)&ISR_DMA2_channel4,
+    (void *)&ISR_DMA2_channel5,
+    (void *)&ISR_DFSDM1_FLT0,
+    (void *)&ISR_DFSDM1_FLT1,
+    (void *)&ISR_DFSDM1_FLT2,
+    (void *)&ISR_COMP,
+    (void *)&ISR_LPTIM1,
+    (void *)&ISR_LPTIM2,
+    (void *)&ISR_OTG_FS,
+    (void *)&ISR_DMA2_channel6,
+    (void *)&ISR_DMA2_channel7,
+    (void *)&ISR_LPUART1,
+    (void *)&ISR_QUADSPI1,
+    (void *)&ISR_I2C3_event,
+    (void *)&ISR_I2C3_error,
+    (void *)&ISR_SAI1,
+    (void *)&ISR_SAI2,
+    (void *)&ISR_SWPMI1,
+    (void *)&ISR_TSC,
+    (void *)&ISR_LCD_global,
+    (void *)&ISR_FPU
 };
 
 void default_handler (void)
