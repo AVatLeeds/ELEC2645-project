@@ -26,8 +26,9 @@ firmware.o: startup_stm32l476rg.o project.o
 
 startup_STM32L476RG.o: startup_stm32l476rg.c
 
-project.o: main.cpp system.cpp system.h
+project.o: main.cpp system.cpp system.h GPIO_driver.h USART_driver.h bit_banged_UART.cpp
 	$(CC) $(CFLAGS) -r -o $@ $^
+# -r produces a relocatable object (partial linking)
 
 flash:
 	st-flash erase
