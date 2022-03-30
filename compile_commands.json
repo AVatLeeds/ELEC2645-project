@@ -13,12 +13,37 @@
             "-fno-exceptions",
             "-r",
             "system.h",
+            "GPIO_driver.h",
+            "USART_driver.h",
             "-o",
             "project.o",
             "main.cpp"
         ],
         "directory": "/home/arthur/Documents/stm32_test",
         "file": "main.cpp"
+    },
+    {
+        "arguments": [
+            "arm-none-eabi-g++",
+            "-c",
+            "-g0",
+            "-Os",
+            "-Wall",
+            "-Wextra",
+            "-mthumb",
+            "-mcpu=cortex-m4",
+            "-nostartfiles",
+            "-fno-exceptions",
+            "-r",
+            "system.h",
+            "GPIO_driver.h",
+            "USART_driver.h",
+            "-o",
+            "project.o",
+            "bit_banged_UART.cpp"
+        ],
+        "directory": "/home/arthur/Documents/stm32_test",
+        "file": "bit_banged_UART.cpp"
     },
     {
         "arguments": [
@@ -53,6 +78,8 @@
             "-fno-exceptions",
             "-r",
             "system.h",
+            "GPIO_driver.h",
+            "USART_driver.h",
             "-o",
             "project.o",
             "system.cpp"
