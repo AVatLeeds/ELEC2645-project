@@ -1,11 +1,6 @@
 #include <stdint.h>
 #include "bit_banged_UART.h"
 
-bit_banged_UART::bit_banged_UART(void)
-{
-    _bit_delay = 79;
-}
-
 bit_banged_UART::bit_banged_UART(uint32_t baud_rate, void (* set_tx)(void), void (* clear_tx)())
 {
     _bit_delay = ((3958815 - (28 * baud_rate)) / (5 * baud_rate));
@@ -93,7 +88,7 @@ void bit_banged_UART::transmit_string(char * string)
     }
 }
 
-void bit_banged_UART::transmit_bytes(uint8_t *bytes, uint32_t num_bytes)
+void bit_banged_UART::transmit_bytes(uint8_t * bytes, uint32_t num_bytes)
 {
     uint32_t i;
     for (i = 0; i < num_bytes; i++)
@@ -107,4 +102,15 @@ void bit_banged_UART::newline()
 {
     transmit_byte('\n');
     transmit_byte('\r');
+}
+
+void bit_banged_UART::set_tx_handlers(void (*set_tx)(), void (*clear_tx)())
+{
+    _set_tx = set_tx;
+    _clear_tx = clear_tx;
+}
+
+void bit_banged_UART::set_baud_rate(uint32_t baud_rate)
+{
+    _bit_delay = ((3958815 - (28 * baud_rate)) / (5 * baud_rate));
 }
