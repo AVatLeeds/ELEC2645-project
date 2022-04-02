@@ -130,7 +130,7 @@ void usage_fault(void)                      __attribute__((weak, alias("default_
 void SV_call(void)                          __attribute__((weak, alias("default_handler")));
 void debug(void)                            __attribute__((weak, alias("default_handler")));
 void pend_SV(void)                          __attribute__((weak, alias("default_handler")));
-void sys_tick_handler(void)                         __attribute__((weak, alias("default_handler")));
+void sys_tick_handler(void)                 __attribute__((weak, alias("default_handler")));
 
 // interrupt service routines
 void ISR_window_watchdog(void)             __attribute__((weak, alias("default_handler")));
