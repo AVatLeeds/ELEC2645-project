@@ -18,6 +18,9 @@ LDFLAGS =	-nostdlib\
 
 STL = st-flash
 
+#INCLUDE =	-I./STM32CubeL4-1.17.1/Drivers/CMSIS/Core/Include\
+			-I./STM32CubeL4-1.17.1/Drivers/CMSIS/Device/ST/STM32L4xx/Include\
+
 firmware.bin: firmware.o
 	arm-none-eabi-objcopy -O binary $^ $@
 
@@ -26,8 +29,8 @@ firmware.o: startup_stm32l476rg.o project.o
 
 startup_STM32L476RG.o: startup_stm32l476rg.c
 
-project.o: main.cpp system.cpp system.h GPIO_driver.h USART_driver.h bit_banged_UART.cpp
-	$(CC) $(CFLAGS) -r -o $@ $^
+project.o: main.cpp systick.cpp bit_banged_UART.cpp USART_driver.cpp 
+	$(CC) $(CFLAGS) -I. -r -o $@ $^
 # -r produces a relocatable object (partial linking)
 
 flash:
