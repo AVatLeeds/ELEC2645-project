@@ -1,156 +1,150 @@
 #include <stdint.h>
-#include <stdio.h>
+#include <stddef.h>
 
 #include "system.h"
+#include "systick.h"
 #include "GPIO_driver.h"
 #include "USART_driver.h"
 #include "bit_banged_UART.h"
 
-uint32_t counter = 0;
-uint32_t init = 0;
+#define RED     1
+#define GREEN   2
+#define YELLOW  3
+#define BLUE    4
+#define PURPLE  5
+#define CYAN    6
+#define WHITE   7
 
-inline void set_tx(void)
+void set_tx(void)
 {
-    GPIO_ODR(PORTB) |= 0x01;
+    GPIO_WRITE_PIN(PORTB, 0, 1);
 }
 
-inline void clear_tx(void)
+void clear_tx(void)
 {
-    GPIO_ODR(PORTB) &= ~(0x01);
+    GPIO_WRITE_PIN(PORTB, 0, 0);
 }
 
+class Status
+{
+    public:
+    Status(uint32_t port, uint32_t pin1, uint32_t pin2, uint32_t pin3);
+    void set_status(uint8_t status);
+    uint8_t operator=(uint8_t status);
+    private:
+    uint32_t _port;
+    uint32_t _pin1;
+    uint32_t _pin2;
+    uint32_t _pin3;
+};
+
+Status::Status(uint32_t port, uint32_t pin1, uint32_t pin2, uint32_t pin3)
+{
+    _port = port;
+    _pin1 = pin1;
+    _pin2 = pin2;
+    _pin3 = pin3;
+    GPIO_ENABLE(_port);
+    GPIO_SET_MODE(_port, _pin1, OUTPUT);
+    GPIO_SET_MODE(_port, _pin2, OUTPUT);
+    GPIO_SET_MODE(_port, _pin3, OUTPUT);
+}
+
+void Status::set_status(uint8_t status)
+{
+    status &= 0b111;
+    GPIO_WRITE_PIN(_port, _pin1, (status & 0b1));
+    GPIO_WRITE_PIN(_port, _pin2, ((status >> 1) & 0b1));
+    GPIO_WRITE_PIN(_port, _pin3, ((status >> 2) & 0b1));
+}
+
+uint8_t Status::operator=(uint8_t status)
+{
+    status &= 0b111;
+    GPIO_WRITE_PIN(_port, _pin1, (status & 0b1));
+    GPIO_WRITE_PIN(_port, _pin2, ((status >> 1) & 0b1));
+    GPIO_WRITE_PIN(_port, _pin3, ((status >> 2) & 0b1));
+    return status;
+}
+
+
+/*
 extern "C"
 {
     int _sbrk() { return -1; }
-    int _write() { return -1; }
+    int _write(int fd, char * buf, size_t count)
+    {
+        GPIO_ODR(PORTB) |= 0b0000000000111000;
+        UART.transmit_bytes((uint8_t *)buf, (uint32_t)count);
+        return count;
+    }
     int _close() { return -1; }
     int _fstat() { return -1; }
     int _isatty() { return -1; }
     int _lseek() { return -1; }
     int _read() { return -1; }
+}*/
+
+void print_reg_value(bit_banged_UART * UART, uint32_t reg_val)
+{
+    UART->newline();
+    UART->print_in_binary((reg_val) >> 24);
+    UART->print_in_binary((reg_val) >> 16);
+    UART->transmit_string(" ");
+    UART->print_in_binary((reg_val) >> 8);
+    UART->print_in_binary((reg_val) >> 0);
+    UART->newline();
 }
 
 int main(void)
 {
     uint32_t i;
+    uint32_t reg_ptr = 0;
+
+    systick_init();
+    char * test_string = "test string\n\r";
 
     GPIO_ENABLE(PORTB);
-    GPIO_MODE(PORTB) = 0x55555555U;
-    GPIO_SPEED(PORTB) = 0xFFFF;
-    GPIO_ODR(PORTB) = 0b0000000000001000;
-
-    bit_banged_UART UART(9600, &set_tx, &clear_tx);
-
-    UART.transmit_string("Hello world!\n\r");
-    for (i = 0; i < 1000000; i++)
-    {
-        __asm__("nop");
-    }
-
-    // Dump GPIO registers
-    uint32_t GPIO_A_base_address = 0x48000000;
-
-    printf("%d\n\r", GPIO_A_base_address);
-
-
-    while(1)
-    {
-        
-    }
-
-    return 0;
-}
-
-/*
-int main(void)
-{
-    // *((uint32_t *)(0xE000E010 + 0)) |= 3;
-    //RCC_APB1ENR1 &= ~(1U << 17);
-
-    RCC_APB1ENR1 |= (1U << 17);
-    RCC_CCIPR |= (1U << 2);
-
-    GPIO_ENABLE(PORTC);
-    GPIO_MODE(PORTC) = 0x5555U;
-
-    GPIO_ENABLE(PORTB);
-    GPIO_MODE(PORTB) = 0x55555555U;
-    GPIO_SPEED(PORTB) = 0xFFFF;
-    GPIO_ODR(PORTB) = 0b0000000000001000;
+    GPIO_SET_MODE(PORTB, 0, OUTPUT);
+    bit_banged_UART UART(9600, set_tx, clear_tx);
+    Status status(PORTB, 3, 4, 5);
+    UART.transmit_string("START");
 
     GPIO_ENABLE(PORTA);
-    GPIO_MODE(PORTA) |= 0b10100000;
-    GPIO_SPEED(PORTA) |= (15U << 4);
-    GPIO_AFR_L(PORTA) |= (7U << 8);
-    GPIO_AFR_L(PORTA) |= (7U << 12);
-    
+    GPIO_SET_MODE(PORTA, 2, ALTERNATE_FUNCTION);
+    GPIO_SET_MODE(PORTA, 3, ALTERNATE_FUNCTION);
+    GPIO_SET_TYPE(PORTA, 2, PUSH_PULL);
+    GPIO_SET_TYPE(PORTA, 3, PUSH_PULL);
+    GPIO_SET_SPEED(PORTA, 2, HIGH_SPEED);
+    GPIO_SET_SPEED(PORTA, 3, HIGH_SPEED);
+    GPIO_SET_ALTERNATE_FUNCTION(PORTA, 2, AF7);
+    GPIO_SET_ALTERNATE_FUNCTION(PORTA, 3, AF7);
+    USART uart(USART_2);
+    print_reg_value(&UART, USART_CR1(USART_2));
 
-    USART_CR1 = 0x00;
-    //USART_WORDLENGTH8();
-    //USART_OVERSAMP16();
-    USART_BAUD9600();
-    //USART_STOPBIT2();
-    //USART_ENABLE();
-    
-    //USART_TE();
+    uart.init(9600);
 
-    USART_CR1 = 0x0D;
+    print_reg_value(&UART, USART_CR1(USART_2));
+    print_reg_value(&UART, USART_CR2(USART_2));
+    print_reg_value(&UART, USART_CR3(USART_2));
+    print_reg_value(&UART, USART_BRR(USART_2));
+    print_reg_value(&UART, GPIO_MODE(PORTA));
+    print_reg_value(&UART, RCC_APB1ENR1);
+    print_reg_value(&UART, RCC_CCIPR);
+    print_reg_value(&UART, GPIO_AFR_L(PORTA));
+    print_reg_value(&UART, USART_CR1(USART_2));
 
-    uint32_t i;
-    for (i = 0; i < 65536; i ++)
-    {
-        __asm__("nop");
-    }
+    status = PURPLE;
+    delay_ms(1000);
 
     while (1)
     {
-        //sys_tick_handler();
-
-        //USART_TDR = 0x65;
-        //while (!(USART_ISR & (1U << 6)));
-
-        GPIO_ODR(PORTB) |= 0x10;
-        delay(800);
-        GPIO_ODR(PORTB) &= ~(0x10);
-        delay(79);
-        GPIO_ODR(PORTB) |= 0x10;
-        delay(79);
-        GPIO_ODR(PORTB) &= ~(0x10);
-        delay(79);
-        GPIO_ODR(PORTB) &= ~(0x10);
-        delay(79);
-        GPIO_ODR(PORTB) &= ~(0x10);
-        delay(79);
-        GPIO_ODR(PORTB) &= ~(0x10);
-        delay(79);
-        GPIO_ODR(PORTB) &= ~(0x10);
-        delay(79);
-        GPIO_ODR(PORTB) |= 0x10;
-        delay(79);
-        GPIO_ODR(PORTB) &= ~(0x10);
-        delay(79);
-        GPIO_ODR(PORTB) |= 0x10;
-        delay(79);
-
-        //init = get_current_ticks();
-        //while (init)
-        //{
-        //    init --;
-        //}
-
-        //USART_TDR = 0x65;
-        //while (!(USART_ISR & (1U << 6)));
-        //delay(79);
-
-        //GPIO_ODR(PORTB) &= ~(0x10);
-
-        //init = get_current_ticks();
-        //while (init)
-        //{
-        //    init --;
-        //}
-
+        status = GREEN;
+        uart.transmit_string("Hello world!\n\r");
+        delay_ms(100);
+        status = RED;
+        delay_ms(100);
     }
-    
+
     return 0;
-}*/
+}
