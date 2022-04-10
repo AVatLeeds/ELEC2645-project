@@ -64,7 +64,7 @@ uint8_t Status::operator=(uint8_t status)
 
 void print_reg_value(USART * UART, uint32_t reg_val)
 {
-    UART->newline();
+    //UART->newline();
     UART->print_in_binary((reg_val) >> 24);
     UART->print_in_binary((reg_val) >> 16);
     UART->transmit_string(" ");
@@ -72,7 +72,6 @@ void print_reg_value(USART * UART, uint32_t reg_val)
     UART->print_in_binary((reg_val) >> 0);
     UART->newline();
 }
-
 
 
 int main(void)
@@ -111,13 +110,39 @@ int main(void)
     status = PURPLE;
     delay_ms(1000);
 
+    GPIO_pin E_pin(PORTC, 8);
+    E_pin.mode(OUTPUT);
+
+    GPIO_pin RW_pin(PORTC, 9);
+    RW_pin.mode(OUTPUT);
+
+    GPIO_pin RS_pin(PORTC, 10);
+    RS_pin.mode(OUTPUT);
+
+    GPIO_bus LCD_data_bus(PORTC, 0, 8);
+
     while (1)
     {
         status = GREEN;
-        uart.transmit_string("Hello world!\n\r");
-        delay_ms(100);
+        E_pin.set();
+        RW_pin.set();
+        RS_pin.set();
+        //LCD_data_bus.write(0b10101010);
+        print_reg_value(&uart, GPIO_MODE(PORTC));
+        print_reg_value(&uart, GPIO_ODR(PORTC));
+        print_reg_value(&uart, LCD_data_bus.read());
+        uart.newline();
+        delay_ms(500);
         status = RED;
-        delay_ms(100);
+        E_pin.clear();
+        RW_pin.clear();
+        RS_pin.clear();
+        //LCD_data_bus.write(0b01010101);
+        print_reg_value(&uart, GPIO_MODE(PORTC));
+        print_reg_value(&uart, GPIO_ODR(PORTC));
+        print_reg_value(&uart, LCD_data_bus.read());
+        uart.newline();
+        delay_ms(500);
     }
 
     return 0;
