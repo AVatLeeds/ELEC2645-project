@@ -4,6 +4,12 @@
 #include <stdint.h>
 #include "system.h"
 
+#define HIGH    1
+#define LOW     0
+
+#define OUT     1
+#define IN      0
+
 #define PORTA   0
 #define PORTB   1
 #define PORTC   2
@@ -58,7 +64,7 @@
 
 #define GPIO_WRITE_PIN(PORT, PIN, STATE)    GPIO_ODR(PORT) = (GPIO_ODR(PORT) & ~(1 << PIN)) | (STATE << PIN)
 #define GPIO_SET_PIN(PORT, PIN)             GPIO_BSRR(PORT) |= (1 << PIN)
-#define GPIO_RESET_PIN(PORT, PIN)           GPIO_BSRR(PORT) |= (1 << (PIN + 16))
+#define GPIO_CLEAR_PIN(PORT, PIN)           GPIO_BSRR(PORT) |= (1 << (PIN + 16))
 #define GPIO_TOGGLE_PIN(PORT, PIN)          GPIO_ODR(PORT) ^= (1 << PIN)
 
 #define AF0     0b0000
@@ -82,24 +88,38 @@
 #define GPIO_SET_ALTERNATE_FUNCTION_L(PORT, PIN, AF)    GPIO_AFR_L(PORT) = (GPIO_AFR_L(PORT) & ~(0b1111 << (PIN * 4))) | (AF << (PIN * 4))
 #define GPIO_SET_ALTERNATE_FUNCTION(PORT, PIN, AF)      ((PIN > 7) ? GPIO_SET_ALTERNATE_FUNCTION_H(PORT, (PIN - 8), AF) : GPIO_SET_ALTERNATE_FUNCTION_L(PORT, PIN, AF))
 
-//enum ports {PORTA, PORTB, PORTC, PORTD, PORTE, PORTF, PORTG, PORTH};
-
-/*
-class GPIO_class
+class GPIO_pin
 {
     public:
-    GPIO_class();
 
-    void set_bit(uint32_t bit);
-    void set_port();
-    void clear_bit(uint32_t bit);
-    void clear_port();
-    void reset_bit(uint32_t bit);
-    void reset_port();
-    void write_port(uint16_t value);
+    GPIO_pin(uint8_t port, uint16_t pin);
+    void mode(bool mode);
+    void set();
+    void clear();
+    void set_state(bool state);
+    bool read();
 
     private:
+
+    uint8_t _port;
+    uint16_t _pin;
 };
-*/
+
+class GPIO_bus
+{
+    public:
+
+    GPIO_bus(uint8_t port, uint16_t offset, uint16_t width);
+    void write(uint16_t data);
+    uint16_t read();
+
+    private:
+
+    uint8_t _port;
+    uint16_t _offset;
+    uint8_t _width_mask;
+    uint32_t _input_mask;
+    uint32_t _output_mask;
+};
 
 #endif
