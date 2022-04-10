@@ -10,12 +10,12 @@ class pin_driver
 {
     public:
     
-    void E_pin(bool state);
-    void RW_pin(bool state);
-    void RS_pin(bool state);
-    void write_data(uint8_t data);
-    uint8_t read_data();
-    void delay();
+    virtual void E_pin(bool state);
+    virtual void RW_pin(bool state);
+    virtual void RS_pin(bool state);
+    virtual void write_data(uint8_t data);
+    virtual uint8_t read_data();
+    virtual void delay();
 };
 
 class HD61830_driver
