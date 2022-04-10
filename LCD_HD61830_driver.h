@@ -6,17 +6,24 @@
 /*
 */
 
+class pin_driver
+{
+    public:
+    
+    void E_pin(bool state);
+    void RW_pin(bool state);
+    void RS_pin(bool state);
+    void write_data(uint8_t data);
+    uint8_t read_data();
+    void delay();
+};
+
 class HD61830_driver
 {
     public:
 
-    HD61830_driver(
-        void (* set_E_pin_state)(bool state),
-        void (* set_RW_pin_state)(bool state),
-        void (* set_RS_pin_state)(bool state),
-        void (* write_data)(uint8_t byte),
-        uint8_t (* read_data)(),
-        void (* delay)());
+    HD61830_driver(pin_driver * pin_driver);
+
     void write_register(uint8_t address, uint8_t data);
     void write_display_data(uint8_t data_byte);
     void display_on();
@@ -34,12 +41,7 @@ class HD61830_driver
 
     private:
 
-    void (* _E)(bool state);
-    void (* _RW)(bool state);
-    void (* _RS)(bool state);
-    void (* _write_data)(uint8_t byte);
-    uint8_t (* _read_data)();
-    void (* _delay)();
+    pin_driver * _pin_driver;
     // default mode is: display on, master mode, character mode, cursor blink, internal character generator
     uint8_t _mode = 0b00111100;
 
