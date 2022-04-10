@@ -9,6 +9,7 @@
 #include "systick.h"
 #include "GPIO_driver.h"
 #include "USART_driver.h"
+#include "LCD_HD61830_driver.h"
 
 #define RED     1
 #define GREEN   2
@@ -73,6 +74,57 @@ void print_reg_value(USART * UART, uint32_t reg_val)
     UART->newline();
 }
 
+class LCD_pin_driver : public pin_driver
+{
+    public:
+
+    LCD_pin_driver():
+    _E_pin(PORTC, 8),
+    _RW_pin(PORTC, 9),
+    _RS_pin(PORTC, 10),
+    _LCD_data_bus(PORTC, 0, 8)
+    {
+
+    }
+
+    void E_pin(bool state)
+    {
+        _E_pin.set_state(state);
+    }
+
+    void RW_pin(bool state)
+    {
+        _RW_pin.set_state(state);
+    }
+
+    void RS_pin(bool state)
+    {
+        _RS_pin.set_state(state);
+    }
+
+    void write_data(uint8_t data)
+    {
+        _LCD_data_bus.write(data);
+    }
+
+    uint8_t read_data()
+    {
+        return _LCD_data_bus.read();
+    }
+
+    void delay()
+    {
+        delay_ms(1);
+    }
+
+    private:
+
+    GPIO_pin _E_pin;
+    GPIO_pin _RW_pin;
+    GPIO_pin _RS_pin;
+    GPIO_bus _LCD_data_bus;
+};
+
 
 int main(void)
 {
@@ -120,13 +172,17 @@ int main(void)
     RS_pin.mode(OUTPUT);
 
     GPIO_bus LCD_data_bus(PORTC, 0, 8);
+    
+    LCD_pin_driver LCD_pin_driver;
+
+    HD61830_driver LCD(&LCD_pin_driver);
 
     while (1)
     {
         status = GREEN;
-        E_pin.set();
-        RW_pin.set();
-        RS_pin.set();
+        E_pin.set_state(1);
+        RW_pin.set_state(1);
+        RS_pin.set_state(1);
         //LCD_data_bus.write(0b10101010);
         print_reg_value(&uart, GPIO_MODE(PORTC));
         print_reg_value(&uart, GPIO_ODR(PORTC));
@@ -134,9 +190,9 @@ int main(void)
         uart.newline();
         delay_ms(500);
         status = RED;
-        E_pin.clear();
-        RW_pin.clear();
-        RS_pin.clear();
+        E_pin.set_state(0);
+        RW_pin.set_state(0);
+        RS_pin.set_state(0);
         //LCD_data_bus.write(0b01010101);
         print_reg_value(&uart, GPIO_MODE(PORTC));
         print_reg_value(&uart, GPIO_ODR(PORTC));
