@@ -43,12 +43,13 @@ GPIO_bus::GPIO_bus(uint8_t port, uint16_t offset, uint16_t width)
     _input_mask = ~(((1 << (width * 2)) - 1) << (offset * 2));
     uint32_t i;
     _output_mask = 0;
-    for (i = 1; i < (1 << (width * 2)); i <<= 2)
+    for (i = 1; i < (1U << (width * 2)); i <<= 2)
     {
         _output_mask += i;
     }
     _output_mask <<= (offset * 2);
-    GPIO_PUPD(_port) = (GPIO_PUPD(_port) & _input_mask) | ~_output_mask;
+    // TODO - add options to configure pull-up or pull-down on bus input
+    GPIO_PUPD(_port) &= _input_mask; // ensure no pull-ups or pull-downs are used
     GPIO_MODE(_port) &= _input_mask;
 }
 
@@ -62,5 +63,10 @@ uint16_t GPIO_bus::read()
 {
     GPIO_MODE(_port) &= _input_mask;
     return (GPIO_IDR(_port) & (_width_mask << _offset)) >> _offset;
+}
+
+void GPIO_bus::high_z()
+{
+    GPIO_MODE(_port) &= _input_mask;
 }
 

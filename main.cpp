@@ -87,32 +87,36 @@ class LCD_pin_driver : public pin_driver
 
     }
 
-    void E_pin(bool state)
+    void E_pin(bool state) override
     {
         _E_pin.set_state(state);
     }
 
-    void RW_pin(bool state)
+    void RW_pin(bool state) override
     {
+        if (state)
+        {
+            _LCD_data_bus.high_z();
+        }
         _RW_pin.set_state(state);
     }
 
-    void RS_pin(bool state)
+    void RS_pin(bool state) override
     {
         _RS_pin.set_state(state);
     }
 
-    void write_data(uint8_t data)
+    void write_data(uint8_t data) override
     {
         _LCD_data_bus.write(data);
     }
 
-    uint8_t read_data()
+    uint8_t read_data() override
     {
         return _LCD_data_bus.read();
     }
 
-    void delay()
+    void delay() override
     {
         delay_ms(1);
     }
@@ -124,7 +128,6 @@ class LCD_pin_driver : public pin_driver
     GPIO_pin _RS_pin;
     GPIO_bus _LCD_data_bus;
 };
-
 
 int main(void)
 {
@@ -177,26 +180,41 @@ int main(void)
 
     HD61830_driver LCD(&LCD_pin_driver);
 
+    //LCD.write_register(0x00, 0b00000000);
+    LCD.write_register(0x00, 0x34); // display on, master mode, character mode, internal CG, cursor blink
+    LCD.write_register(0x01, 0x75); //0b01110101); // 6x8 font
+    LCD.write_register(0x02, 0x27); // 30 horizontal characters
+    LCD.write_register(0x03, 0x3F); // 64 time divisions?
+    LCD.write_register(0x04, 0x07); // 8 pixel tall cursor
+    LCD.write_register(0x08, 0x00); // display start address low
+    LCD.write_register(0x09, 0x00); // display start address high
+    LCD.write_register(0x0A, 0x00); // cursor address low
+    LCD.write_register(0x0B, 0x00); // cursor address high
+
+    LCD.write_register(0x0A, 0xFF); // cursor address low
+    LCD.write_register(0x0B, 0x01); // cursor address high
+
     while (1)
     {
         status = GREEN;
-        E_pin.set_state(1);
-        RW_pin.set_state(1);
-        RS_pin.set_state(1);
+        //E_pin.set_state(1);
+        //RW_pin.set_state(1);
+        //RS_pin.set_state(1);
         //LCD_data_bus.write(0b10101010);
-        print_reg_value(&uart, GPIO_MODE(PORTC));
-        print_reg_value(&uart, GPIO_ODR(PORTC));
-        print_reg_value(&uart, LCD_data_bus.read());
+        //print_reg_value(&uart, GPIO_MODE(PORTC));
+        //print_reg_value(&uart, GPIO_ODR(PORTC));
+        //print_reg_value(&uart, LCD_data_bus.read());
+        LCD.write_register(0x0C, 0x45);
         uart.newline();
         delay_ms(500);
         status = RED;
-        E_pin.set_state(0);
-        RW_pin.set_state(0);
-        RS_pin.set_state(0);
+        //E_pin.set_state(0);
+        //RW_pin.set_state(0);
+        //RS_pin.set_state(0);
         //LCD_data_bus.write(0b01010101);
-        print_reg_value(&uart, GPIO_MODE(PORTC));
-        print_reg_value(&uart, GPIO_ODR(PORTC));
-        print_reg_value(&uart, LCD_data_bus.read());
+        //print_reg_value(&uart, GPIO_MODE(PORTC));
+        //print_reg_value(&uart, GPIO_ODR(PORTC));
+        //print_reg_value(&uart, LCD_data_bus.read());
         uart.newline();
         delay_ms(500);
     }

@@ -8,11 +8,16 @@ CFLAGS =	-g0\
 			-mno-thumb-interwork \
 			-mcpu=cortex-m4 \
 			-nostartfiles\
+			-specs=nano.specs\
+			-specs=nosys.specs\
+			-fno-rtti\
 			-fno-exceptions #disabling c++ exception handling as otherwise causes a bunch of missing symbols
 
 LD = arm-none-eabi-ld
 
-LDFLAGS =	-Map=firmware.map\
+LDFLAGS =	-nostdlib\
+			-nostartfiles\
+			-Map=firmware.map\
 			-T startup_stm32l476rg.ld\
 
 STL = st-flash

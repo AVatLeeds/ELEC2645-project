@@ -112,6 +112,7 @@ class GPIO_bus
     GPIO_bus(uint8_t port, uint16_t offset, uint16_t width);
     void write(uint16_t data);
     uint16_t read();
+    void high_z();
 
     private:
 
