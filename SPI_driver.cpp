@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "SPI.h"
+#include "SPI_driver.h"
 
 SPI_driver::SPI_driver(uint8_t which)
 {
