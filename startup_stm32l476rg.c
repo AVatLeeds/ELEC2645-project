@@ -82,13 +82,16 @@ text section, start of data section etc... In our case we don't care about the v
 variables (the values will just be bytes of the program or bytes in RAM), rather we care about
 their addresses */
 
-extern uint8_t start_of_text_section; // relative to FLASH origin
-extern uint8_t start_of_data_section; // relative to VMA (SRAM1 origin)
-extern uint8_t start_of_bss_section;  // relative to VMA (SRAM1 origin)
+extern uint32_t start_of_text_section; // relative to FLASH origin
+extern uint32_t start_of_data_section; // relative to VMA (SRAM1 origin)
+extern uint32_t start_of_bss_section;  // relative to VMA (SRAM1 origin)
 
-extern uint8_t end_of_text_section;   // relative to FLASH origin
-extern uint8_t end_of_data_section;   // relative to VMA (SRAM1 origin)
-extern uint8_t end_of_bss_section;    // relative to VMA (SRAM1 origin)
+extern uint32_t end_of_text_section;   // relative to FLASH origin
+extern uint32_t end_of_data_section;   // relative to VMA (SRAM1 origin)
+extern uint32_t end_of_bss_section;    // relative to VMA (SRAM1 origin)
+
+extern void (* start_of_init_array)();
+extern void (* end_of_init_array)();
 
 extern int main(void);
 
@@ -223,101 +226,101 @@ section in the output object file called ".vector_table". as far as I know the d
 beginning of the section name is not actually required, but rather a convention. (The linker
 script can be used to tell the linker where to place this section withing the final binary). */
 
-void * vector_table[] __attribute__((section(".vector_table"))) = {
-    (void *)STACK_START,
-    (void *)&reset_handler,
-    (void *)&non_maskable_interrupt_handler,
-    (void *)&hard_fault_interrupt_handler,
-    (void *)&memory_manager_interrupt_handler,
-    (void *)&bus_fault,
-    (void *)&usage_fault,
+void (* vector_table[])() __attribute__((section(".vector_table"))) = {
+    (void (*)())STACK_START,
+    reset_handler,
+    non_maskable_interrupt_handler,
+    hard_fault_interrupt_handler,
+    memory_manager_interrupt_handler,
+    bus_fault,
+    usage_fault,
     0,
     0,
     0,
     0,
-    (void *)&SV_call,
-    (void *)&debug,
+    SV_call,
+    debug,
     0,
-    (void *)&pend_SV,
-    (void *)&sys_tick_handler,
-    (void *)&ISR_window_watchdog,
-    (void *)&ISR_PVD_PVM,
-    (void *)&ISR_realtime_clock_TAMP_STAMP,
-    (void *)&ISR_realtime_clock_wakeup,
-    (void *)&ISR_flash_global,
-    (void *)&ISR_RCC_global,
-    (void *)&ISR_EXT_line0,
-    (void *)&ISR_EXT_line1,
-    (void *)&ISR_EXT_line2,
-    (void *)&ISR_EXT_line3,
-    (void *)&ISR_EXT_line4,
-    (void *)&ISR_EXT_line5,
-    (void *)&ISR_DMA1_channel1,
-    (void *)&ISR_DMA1_channel2,
-    (void *)&ISR_DMA1_channel3,
-    (void *)&ISR_DMA1_channel4,
-    (void *)&ISR_DMA1_channel5,
-    (void *)&ISR_DMA1_channel6,
-    (void *)&ISR_DMA1_channel7,
-    (void *)&ISR_ADC_1_and_2_global,
-    (void *)&ISR_CAN1_transmit,
-    (void *)&ISR_CAN1_receive0,
-    (void *)&ISR_CAN1_receive1,
-    (void *)&ISR_CAN1_SCE,
-    (void *)&ISR_EXT_lines_9_to_5,
-    (void *)&ISR_timer1_capture_compare,
-    (void *)&ISR_timer2_global,
-    (void *)&ISR_timer3_global,
-    (void *)&ISR_timer4_global,
-    (void *)&ISR_I2C1_event,
-    (void *)&ISR_I2C1_error,
-    (void *)&ISR_I2C2_event,
-    (void *)&ISR_I2C2_error,
-    (void *)&ISR_SPI1_global,
-    (void *)&ISR_SPI2_global,
-    (void *)&ISR_USART1_global,
-    (void *)&ISR_USART2_global,
-    (void *)&ISR_USART3_global,
-    (void *)&ISR_EXT_lines_15_to_10,
-    (void *)&ISR_realtime_clock_alarm,
-    (void *)&ISR_DFSDM1_PLT3,
-    (void *)&ISR_timer8_break,
-    (void *)&ISR_timer8_update,
-    (void *)&ISR_timer8_trigger,
-    (void *)&ISR_timer8_capture_compare,
-    (void *)&ISR_ADC3_global,
-    (void *)&ISR_FMC,
-    (void *)&ISR_SDMMC1,
-    (void *)&ISR_timer5_global,
-    (void *)&ISR_SPI3_global,
-    (void *)&ISR_UART4_global,
-    (void *)&ISR_UART5_global,
-    (void *)&ISR_timer6_global,
-    (void *)&ISR_timer7_global,
-    (void *)&ISR_DMA2_channel1,
-    (void *)&ISR_DMA2_channel2,
-    (void *)&ISR_DMA2_channel3,
-    (void *)&ISR_DMA2_channel4,
-    (void *)&ISR_DMA2_channel5,
-    (void *)&ISR_DFSDM1_FLT0,
-    (void *)&ISR_DFSDM1_FLT1,
-    (void *)&ISR_DFSDM1_FLT2,
-    (void *)&ISR_COMP,
-    (void *)&ISR_LPTIM1,
-    (void *)&ISR_LPTIM2,
-    (void *)&ISR_OTG_FS,
-    (void *)&ISR_DMA2_channel6,
-    (void *)&ISR_DMA2_channel7,
-    (void *)&ISR_LPUART1,
-    (void *)&ISR_QUADSPI1,
-    (void *)&ISR_I2C3_event,
-    (void *)&ISR_I2C3_error,
-    (void *)&ISR_SAI1,
-    (void *)&ISR_SAI2,
-    (void *)&ISR_SWPMI1,
-    (void *)&ISR_TSC,
-    (void *)&ISR_LCD_global,
-    (void *)&ISR_FPU
+    pend_SV,
+    sys_tick_handler,
+    ISR_window_watchdog,
+    ISR_PVD_PVM,
+    ISR_realtime_clock_TAMP_STAMP,
+    ISR_realtime_clock_wakeup,
+    ISR_flash_global,
+    ISR_RCC_global,
+    ISR_EXT_line0,
+    ISR_EXT_line1,
+    ISR_EXT_line2,
+    ISR_EXT_line3,
+    ISR_EXT_line4,
+    ISR_EXT_line5,
+    ISR_DMA1_channel1,
+    ISR_DMA1_channel2,
+    ISR_DMA1_channel3,
+    ISR_DMA1_channel4,
+    ISR_DMA1_channel5,
+    ISR_DMA1_channel6,
+    ISR_DMA1_channel7,
+    ISR_ADC_1_and_2_global,
+    ISR_CAN1_transmit,
+    ISR_CAN1_receive0,
+    ISR_CAN1_receive1,
+    ISR_CAN1_SCE,
+    ISR_EXT_lines_9_to_5,
+    ISR_timer1_capture_compare,
+    ISR_timer2_global,
+    ISR_timer3_global,
+    ISR_timer4_global,
+    ISR_I2C1_event,
+    ISR_I2C1_error,
+    ISR_I2C2_event,
+    ISR_I2C2_error,
+    ISR_SPI1_global,
+    ISR_SPI2_global,
+    ISR_USART1_global,
+    ISR_USART2_global,
+    ISR_USART3_global,
+    ISR_EXT_lines_15_to_10,
+    ISR_realtime_clock_alarm,
+    ISR_DFSDM1_PLT3,
+    ISR_timer8_break,
+    ISR_timer8_update,
+    ISR_timer8_trigger,
+    ISR_timer8_capture_compare,
+    ISR_ADC3_global,
+    ISR_FMC,
+    ISR_SDMMC1,
+    ISR_timer5_global,
+    ISR_SPI3_global,
+    ISR_UART4_global,
+    ISR_UART5_global,
+    ISR_timer6_global,
+    ISR_timer7_global,
+    ISR_DMA2_channel1,
+    ISR_DMA2_channel2,
+    ISR_DMA2_channel3,
+    ISR_DMA2_channel4,
+    ISR_DMA2_channel5,
+    ISR_DFSDM1_FLT0,
+    ISR_DFSDM1_FLT1,
+    ISR_DFSDM1_FLT2,
+    ISR_COMP,
+    ISR_LPTIM1,
+    ISR_LPTIM2,
+    ISR_OTG_FS,
+    ISR_DMA2_channel6,
+    ISR_DMA2_channel7,
+    ISR_LPUART1,
+    ISR_QUADSPI1,
+    ISR_I2C3_event,
+    ISR_I2C3_error,
+    ISR_SAI1,
+    ISR_SAI2,
+    ISR_SWPMI1,
+    ISR_TSC,
+    ISR_LCD_global,
+    ISR_FPU
 };
 
 void default_handler (void)
@@ -360,6 +363,13 @@ void reset_handler(void)
     {
         *sram_pointer = 0;
         sram_pointer++;
+    }
+
+    // iterate over the list of pointers to constructors each time dereferencing the constructor pointer and executing it
+    void (** constructor_ptr)();
+    for (constructor_ptr = &start_of_init_array; constructor_ptr < &end_of_init_array; constructor_ptr ++)
+    {
+        (*constructor_ptr)();
     }
 
     main();

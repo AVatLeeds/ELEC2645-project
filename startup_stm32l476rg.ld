@@ -19,6 +19,14 @@ SECTIONS
         end_of_text_section = .;    /* end of text section symbol with current address of location counter */
     } > FLASH                       /* VMA and LMA are both relative to FLASH origin */
 
+    .init_array :
+    {
+        start_of_init_array = .;
+        *(.init_array)
+        . = ALIGN(4);
+        end_of_init_array = .;
+    } > FLASH
+
     .data :
     {
         start_of_data_section = .;  /* start of data section symbol with current address of location counter */
