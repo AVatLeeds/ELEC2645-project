@@ -33,7 +33,7 @@ firmware.o: startup_stm32l476rg.o project.o
 
 startup_STM32L476RG.o: startup_stm32l476rg.c
 
-project.o: main.cpp systick.cpp USART_driver.cpp GPIO_driver.cpp LCD_HD61830_driver.cpp
+project.o: main.cpp systick.cpp USART_driver.cpp GPIO_driver.cpp SPI_driver.cpp
 	$(CC) $(CFLAGS) -I. -r -o $@ $^
 # -r produces a relocatable object (partial linking)
 
