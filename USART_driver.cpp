@@ -1,6 +1,6 @@
 #include "USART_driver.h"
 
-USART::USART(uint32_t USART, uint32_t baud_rate)
+USART_driver::USART_driver(uint32_t USART, uint32_t baud_rate)
 {
     _USART = USART;
     USART_CLK_ENABLE(_USART);
@@ -12,12 +12,12 @@ USART::USART(uint32_t USART, uint32_t baud_rate)
     USART_ENABLE(_USART);
 }
 
-void USART::set_usart(uint32_t USART)
+void USART_driver::set_usart(uint32_t USART)
 {
     _USART = USART;
 }
 
-void USART::init(uint32_t baud_rate)
+void USART_driver::init(uint32_t baud_rate)
 {
     USART_CLK_ENABLE(_USART);
     USART_CR1(_USART) = 0;
@@ -28,7 +28,7 @@ void USART::init(uint32_t baud_rate)
     USART_ENABLE(_USART);
 }
 
-void USART::transmit_byte(uint8_t byte)
+void USART_driver::transmit_byte(uint8_t byte)
 {
     USART_TX_ENABLE(_USART);
     while (!USART_IS_TX_REG_EMPTY(_USART));
@@ -36,7 +36,7 @@ void USART::transmit_byte(uint8_t byte)
     while (!USART_IS_TX_COMPLETE(_USART));
 }
 
-void USART::transmit_bytes(uint8_t * bytes, uint32_t num_bytes)
+void USART_driver::transmit_bytes(uint8_t * bytes, uint32_t num_bytes)
 {
     uint32_t i;
     for (i = 0; i < num_bytes; i++)
@@ -46,7 +46,7 @@ void USART::transmit_bytes(uint8_t * bytes, uint32_t num_bytes)
     } 
 }
 
-void USART::print_string(const char * string)
+void USART_driver::print_string(const char * string)
 {
     USART_TX_ENABLE(_USART);
     while (*string != '\0')
@@ -56,7 +56,7 @@ void USART::print_string(const char * string)
     }
 }
 
-void USART::print_in_binary(uint8_t byte)
+void USART_driver::print_in_binary(uint8_t byte)
 {
     uint8_t i;
     for (i = 0; i < 8; i ++)
@@ -65,7 +65,7 @@ void USART::print_in_binary(uint8_t byte)
     }
 }
 
-void USART::print_in_hex(uint8_t byte)
+void USART_driver::print_in_hex(uint8_t byte)
 {
     uint8_t lower_nibble = byte & 0x0F;
     uint8_t upper_nibble = (byte >> 4) & 0x0F;
@@ -89,7 +89,7 @@ void USART::print_in_hex(uint8_t byte)
     }
 }
 
-void USART::print_register(const char * name, uint32_t reg_val)
+void USART_driver::print_register(const char * name, uint32_t reg_val)
 {
     //UART->newline();
     print_string(name);
@@ -102,7 +102,7 @@ void USART::print_register(const char * name, uint32_t reg_val)
     newline();
 }
 
-void USART::newline()
+void USART_driver::newline()
 {
     transmit_byte('\n');
     transmit_byte('\r');

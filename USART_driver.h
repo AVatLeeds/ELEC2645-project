@@ -65,10 +65,10 @@ and get rid of this comment */
 #define USART_IS_TX_REG_EMPTY(USART)    ((USART_ISR(USART) >> 7) & 0b1)
 #define USART_IS_TX_COMPLETE(USART)     ((USART_ISR(USART) >> 6) & 0b1)
 
-class USART
+class USART_driver
 {
     public:
-    USART(uint32_t USART, uint32_t baud_rate);
+    USART_driver(uint32_t USART, uint32_t baud_rate);
     void set_usart(uint32_t USART);
     void init(uint32_t baud_rate);
     void transmit_byte(uint8_t byte);
