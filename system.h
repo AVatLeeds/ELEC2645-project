@@ -49,8 +49,19 @@
 
 //#define SYSCKL_SOURCE(SRC)
 
-void sys_tick_handler(void);
+/* Clock setup */
 
-uint32_t get_current_ticks(void);
+/* From the datasheet - The MSI clock is used as system clock after restart from Reset, wakeup from Standby and
+Shutdown low-power modes. After restart from Reset, the MSI frequency is set to its default
+value 4 MHz. */
+
+#define MSIRDY
+
+#define MSI
+#define HSI16
+#define HSE
+#define PLL
+
+#define SET_SYSCLK_SOURCE(SRC)
 
 #endif
