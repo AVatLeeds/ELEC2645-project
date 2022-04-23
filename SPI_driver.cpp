@@ -1,24 +1,31 @@
 #include <stdint.h>
+#include "system.h"
 #include "SPI_driver.h"
 
 SPI_driver::SPI_driver(uint8_t which)
 {
     switch (which) {
         case SPI1:
-        registers = (SPI_registers *)SPI_1_ORIGIN;
+        registers = (struct SPI_registers *)SPI_1_ORIGIN;
+        RCC_APB2ENR |= (1U << 12); // enable clock to SPI1 peripheral
         break;
 
         case SPI2:
-        registers = (SPI_registers *)SPI_2_ORIGIN;;
+        registers = (struct SPI_registers *)SPI_2_ORIGIN;
+        RCC_APB1ENR1 |= (1U << 14);
         break;
 
         case SPI3:
-        registers = (SPI_registers *)SPI_3_ORIGIN;;
+        registers = (struct SPI_registers *)SPI_3_ORIGIN;
+        RCC_APB1ENR1 |= (1U << 15);
         break;
 
         default:
-        registers = (SPI_registers *)SPI_1_ORIGIN;;
+        registers = (struct SPI_registers *)SPI_1_ORIGIN;
+        RCC_APB2ENR |= (1U << 12); // enable clock to SPI1 peripheral
     }
+
+    
 }
 
 // methods for setup of control register 1
@@ -132,9 +139,9 @@ void SPI_driver::FIFO_threshold_16bit()
     registers->control_reg_2 &= ~(1U << 12);
 }
 
-void SPI_driver::data_size(uint8_t size)
+void SPI_driver::data_size(uint32_t size)
 {
-    size = (size & 0b1111) << 8;
+    size = ((size - 1) & 0b1111) << 8;
     uint32_t reg = registers->control_reg_2;
     registers->control_reg_2 = ((reg & (0b1111 << 8)) ^ size) ^ reg;
 }

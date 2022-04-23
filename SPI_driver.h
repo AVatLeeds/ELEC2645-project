@@ -28,7 +28,7 @@ class SPI_driver
 
     SPI_driver(uint8_t which);
 
-    struct SPI_registers * registers;
+    volatile struct SPI_registers * registers;
     void bidirectional_mode(bool state);
     void bidirectional_rx_only();
     void bidirectional_tx_only();
@@ -53,7 +53,7 @@ class SPI_driver
     // implement LDMA_RX
     void FIFO_threshold_8bit();
     void FIFO_threshold_16bit();
-    void data_size(uint8_t size);
+    void data_size(uint32_t size);
     void tx_empty_interrupt_enable(bool state);
     void rx_not_empty_interrupt_enable(bool state);
     void error_interrupt_enable(bool state);
