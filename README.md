@@ -2,11 +2,13 @@
 
 ## Introduction
 
-I have been working on the content of this repository since the beginning of this semester (January 2022), however, only as of today (April 9th 2022) have I uploaded the content publicly.
+Here is the ongoing work on my project for ELEC 2645.
 
-Therefore, any commits before this date represent my various experiments with the ST Nucleo L476RG development board and are intended to serve as the basis for my ELEC2645 module project, the code for which will be uploaded here shortly.
+- To build simply run ```make```
+- to flash the compiled application to the Nucleo L476RG development board run ```make flash```
+- To clear up all build files run ```make clean```
 
-First, some of what I have learned from my experiments.
+First, Here are some of the thinks I have learned while working on my project so far.
 
 ### **Look mum! No operating system**
 
@@ -125,6 +127,8 @@ This section of my linker script specifies the different memories avalible on my
 In the rest of my linker script I specify the layout and order of the different sections of the final object file.
 
 The ".text" section of my executable combines the ".text" and ".rodata" sections of all the other object files that are being linked using the syntax ```*(.text)``` and ```*(.rodata)```.
+
+A specific section of the "startup_stm32l476rg.o" object file called ".vector_table" is placed at the very beginning of the text section (```startup_stm32l476rg.o(.vector_table)```). More discussion of the vector table further on.
 
 The linker script has a feature called the location counter, syntactically denoted by ".". When the location counter is read it will return the address of that particular point withing the object file, allowing symbols to be created with the address in the object file at certain points. For example ```start_of_text_section = .;``` and ```end_of_text_section = .;```. The address counter can also be written to, as in ```. = ALIGN(4);```. I have done this in order to ensure that the boundary between each section is aligned to 32-bit word boundaries.
 
