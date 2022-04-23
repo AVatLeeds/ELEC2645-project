@@ -22,10 +22,6 @@ struct SPI_registers
     volatile uint32_t CRC_reg_TX;
 };
 
-struct SPI_registers * SPI_1 = (SPI_registers * )SPI_1_ORIGIN;
-struct SPI_registers * SPI_2 = (SPI_registers * )SPI_2_ORIGIN;
-struct SPI_registers * SPI_3 = (SPI_registers * )SPI_3_ORIGIN;
-
 class SPI_driver
 {
     public:
