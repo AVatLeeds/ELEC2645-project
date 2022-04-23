@@ -1,4 +1,3 @@
-#include "GPIO_driver.h"
 #include <stdint.h>
 #include "GPIO_driver.h"
 
