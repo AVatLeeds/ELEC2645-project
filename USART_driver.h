@@ -68,14 +68,15 @@ and get rid of this comment */
 class USART
 {
     public:
-    USART(uint32_t USART);
+    USART(uint32_t USART, uint32_t baud_rate);
     void set_usart(uint32_t USART);
     void init(uint32_t baud_rate);
     void transmit_byte(uint8_t byte);
     void transmit_bytes(uint8_t * bytes, uint32_t num_bytes);
-    void transmit_string(const char * string);
+    void print_string(const char * string);
     void print_in_binary(uint8_t byte);
     void print_in_hex(uint8_t byte);
+    void print_register(const char * name, uint32_t reg_val);
     void newline(void);
     
 
