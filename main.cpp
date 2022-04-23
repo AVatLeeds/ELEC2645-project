@@ -82,28 +82,54 @@ class LCD_pin_driver : public pin_driver
     _E_pin(PORTC, 8),
     _RW_pin(PORTC, 9),
     _RS_pin(PORTC, 10),
+    _CS_pin(PORTC, 11),
+    _RES_pin(PORTC, 12),
     _LCD_data_bus(PORTC, 0, 8)
     {
+        _E_pin.mode(OUTPUT);
+        _E_pin.type(OPEN_DRAIN);
+        _E_pin.pull(NONE);
 
+        _RW_pin.mode(OUTPUT);
+        _RW_pin.type(OPEN_DRAIN);
+        _RW_pin.pull(NONE);
+
+        _RS_pin.mode(OUTPUT);
+        _RS_pin.type(OPEN_DRAIN);
+        _RS_pin.pull(NONE);
+
+        _CS_pin.mode(OUTPUT);
+        _CS_pin.type(OPEN_DRAIN);
+        _CS_pin.pull(NONE);
+
+        _RES_pin.mode(OUTPUT);
+        _RES_pin.type(OPEN_DRAIN);
+        _RES_pin.pull(NONE);
     }
 
-    void E_pin(bool state) override
+    void enable(bool state) override
     {
         _E_pin.set_state(state);
     }
 
-    void RW_pin(bool state) override
+    void rw_state(bool state) override
     {
-        if (state)
-        {
-            _LCD_data_bus.high_z();
-        }
         _RW_pin.set_state(state);
     }
 
-    void RS_pin(bool state) override
+    void rs_state(bool state) override
     {
         _RS_pin.set_state(state);
+    }
+
+    void chip_select(bool state) override
+    {
+        _CS_pin.set_state(state);
+    }
+
+    void reset(bool state) override
+    {
+        _RES_pin.set_state(state);
     }
 
     void write_data(uint8_t data) override
@@ -126,6 +152,8 @@ class LCD_pin_driver : public pin_driver
     GPIO_pin _E_pin;
     GPIO_pin _RW_pin;
     GPIO_pin _RS_pin;
+    GPIO_pin _CS_pin;
+    GPIO_pin _RES_pin;
     GPIO_bus _LCD_data_bus;
 };
 
@@ -164,20 +192,8 @@ int main(void)
 
     status = PURPLE;
     delay_ms(1000);
-
-    GPIO_pin E_pin(PORTC, 8);
-    E_pin.mode(OUTPUT);
-
-    GPIO_pin RW_pin(PORTC, 9);
-    RW_pin.mode(OUTPUT);
-
-    GPIO_pin RS_pin(PORTC, 10);
-    RS_pin.mode(OUTPUT);
-
-    GPIO_bus LCD_data_bus(PORTC, 0, 8);
     
     LCD_pin_driver LCD_pin_driver;
-
     HD61830_driver LCD(&LCD_pin_driver);
 
     //LCD.write_register(0x00, 0b00000000);
@@ -197,25 +213,10 @@ int main(void)
     while (1)
     {
         status = GREEN;
-        //E_pin.set_state(1);
-        //RW_pin.set_state(1);
-        //RS_pin.set_state(1);
-        //LCD_data_bus.write(0b10101010);
-        //print_reg_value(&uart, GPIO_MODE(PORTC));
-        //print_reg_value(&uart, GPIO_ODR(PORTC));
-        //print_reg_value(&uart, LCD_data_bus.read());
-        LCD.write_register(0x0C, 0x45);
-        uart.newline();
+        LCD.write_register(0x0C, 65);
         delay_ms(500);
         status = RED;
-        //E_pin.set_state(0);
-        //RW_pin.set_state(0);
-        //RS_pin.set_state(0);
-        //LCD_data_bus.write(0b01010101);
-        //print_reg_value(&uart, GPIO_MODE(PORTC));
-        //print_reg_value(&uart, GPIO_ODR(PORTC));
-        //print_reg_value(&uart, LCD_data_bus.read());
-        uart.newline();
+        LCD.write_register(0x0C, 65);
         delay_ms(500);
     }
 

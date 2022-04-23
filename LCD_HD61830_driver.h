@@ -23,11 +23,11 @@ class pin_driver
 {
     public:
     
-    //pin_driver();
-    //virtual ~pin_driver();
-    virtual void E_pin(bool state);
-    virtual void RW_pin(bool state);
-    virtual void RS_pin(bool state);
+    virtual void enable(bool state);
+    virtual void rw_state(bool state);
+    virtual void rs_state(bool state);
+    virtual void chip_select(bool state);
+    virtual void reset(bool state);
     virtual void write_data(uint8_t data);
     virtual uint8_t read_data();
     virtual void delay();
