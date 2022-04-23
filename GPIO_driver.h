@@ -94,6 +94,8 @@ class GPIO_pin
 
     GPIO_pin(uint8_t port, uint16_t pin);
     void mode(bool mode);
+    void type(bool type);
+    void pull(uint8_t pull_type);
     void set();
     void clear();
     void set_state(bool state);

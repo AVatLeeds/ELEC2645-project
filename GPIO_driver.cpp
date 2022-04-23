@@ -14,6 +14,16 @@ void GPIO_pin::mode(bool mode)
     GPIO_SET_MODE(_port, _pin, mode);
 }
 
+void GPIO_pin::type(bool type)
+{
+    GPIO_SET_TYPE(_port, _pin, type);
+}
+
+void GPIO_pin::pull(uint8_t pull_type)
+{
+    GPIO_SET_PUPD(_port, _pin, pull_type);
+}
+
 void GPIO_pin::set()
 {
     GPIO_SET_PIN(_port, _pin);
