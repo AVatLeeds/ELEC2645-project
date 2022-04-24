@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 #include "status_LED.h"
 #include "system.h"
@@ -18,7 +19,53 @@ void nop()
 
 status_LED status(PORTB, 3, 4, 5);
 
-USART_driver uart(USART_2, 9600);
+USART_driver uart(USART_2, 115200);
+
+extern "C"
+{
+    int _sbrk()
+    {
+        uart.print_string("in sbrk\n");
+        return 0;
+    }
+
+    int _write(int fd, char * ptr, int len)
+    {
+        uart.print_string("in write\n");
+        uart.transmit_bytes((uint8_t *)ptr, len);
+        return len;
+    }
+
+    int _close(int fd)
+    {
+        uart.print_string("in close\n");
+        return -1;
+    }
+
+    int _lseek(int fd, int ptr, int dir)
+    {
+        uart.print_string("in lseek\n");
+        return -1;
+    }
+
+    int _read(int fd, char * ptr, int len)
+    {
+        uart.print_string("in read\n");
+        return -1;
+    }
+
+    int _fstat()
+    {
+        uart.print_string("in fstat\n");
+        return S_IFCHR;
+    }
+
+    int _isatty(int fd)
+    {
+        uart.print_string("in sbrk\n");
+        return 1;
+    }
+}
 
 SPI_driver SPI(SPI1);
 
@@ -104,9 +151,11 @@ int main(void)
     ADC_conv.mode(OUTPUT);
     ADC_conv.type(PUSH_PULL);
 
+    status = YELLOW;
+
     while (true)
     {
-        status = YELLOW;
+        //status = YELLOW;
 
         // ADC minimum conversion time is 225 ns so one or to nops should be sufficient delay
         // this is only a temporary solution
@@ -116,16 +165,17 @@ int main(void)
         ADC_conv.clear();
 
         SPI.registers->data_reg = 0x0000;
-        uart.print_register("SPI status reg", SPI.registers->status_reg);
+        //uart.print_register("SPI status reg", SPI.registers->status_reg);
         uint16_t data = SPI.registers->data_reg;
         uart.print_in_hex(data >> 8);
         uart.print_in_hex(data);
+        //printf("%d\n", data);
         uart.newline();
-        uart.print_register("SPI status reg", SPI.registers->status_reg);
-        uart.newline();
+        //uart.print_register("SPI status reg", SPI.registers->status_reg);
+        //uart.newline();
 
-        delay_ms(200);
-        status = BLUE;
-        delay_ms(200);
+        //delay_ms(200);
+        //status = BLUE;
+        //delay_ms(200);
     }
 }
