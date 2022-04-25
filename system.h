@@ -41,6 +41,21 @@
 #define PLL_ENABLE()    RCC_CR |= (1U << 24)
 #define PLL_STABLE      RCC_CR & (1U << 25)
 
+// Nested Vectored Interrupt Controller
+
+#define NVIC_BASE 0xE000E000
+
+#define NVIC_ISER(IDX)  *((volatile uint32_t *)(NVIC_BASE + 0x100 + (0x04 * IDX)))
+#define NVIC_ICER(IDX)  *((volatile uint32_t *)(NVIC_BASE + 0x180 + (0x04 * IDX)))
+#define NVIC_ISPR(IDX)  *((volatile uint32_t *)(NVIC_BASE + 0x200 + (0x04 * IDX)))
+#define NVIC_ICPR(IDX)  *((volatile uint32_t *)(NVIC_BASE + 0x280 + (0x04 * IDX)))
+#define NVIC_IABR(IDX)  *((volatile uint32_t *)(NVIC_BASE + 0x300 + (0x04 * IDX)))
+#define NVIC_IPR(IDX)   *((volatile uint32_t *)(NVIC_BASE + 0x400 + (0x04 * IDX)))
+
+// implementing enable and disable for now. More to do.
+#define NVIC_ENABLE_INTERRUPT(IDX)      (NVIC_ISER((IDX >> 5U) & 0b111) |= (1U << (IDX & 0b11111)))
+#define NVIC_DISABLE_INTERRUPT(IDX)     (NVIC_ICER((IDX >> 5U) & 0b111) |= (1U << (IDX & 0b11111)))
+
 //#define PLL_INPUT_DIVISOR
 //#define PLL_INPUT_MULTIPLIER
 //#define PLL_OUTPUT_DIVISOR_P
@@ -54,14 +69,5 @@
 /* From the datasheet - The MSI clock is used as system clock after restart from Reset, wakeup from Standby and
 Shutdown low-power modes. After restart from Reset, the MSI frequency is set to its default
 value 4 MHz. */
-
-#define MSIRDY
-
-#define MSI
-#define HSI16
-#define HSE
-#define PLL
-
-#define SET_SYSCLK_SOURCE(SRC)
 
 #endif
