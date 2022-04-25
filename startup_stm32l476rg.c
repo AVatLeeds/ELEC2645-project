@@ -147,7 +147,6 @@ void ISR_EXT_line1(void)                   __attribute__((weak, alias("default_h
 void ISR_EXT_line2(void)                   __attribute__((weak, alias("default_handler")));
 void ISR_EXT_line3(void)                   __attribute__((weak, alias("default_handler")));
 void ISR_EXT_line4(void)                   __attribute__((weak, alias("default_handler")));
-void ISR_EXT_line5(void)                   __attribute__((weak, alias("default_handler")));
 void ISR_DMA1_channel1(void)               __attribute__((weak, alias("default_handler")));
 void ISR_DMA1_channel2(void)               __attribute__((weak, alias("default_handler")));
 void ISR_DMA1_channel3(void)               __attribute__((weak, alias("default_handler")));
@@ -161,6 +160,9 @@ void ISR_CAN1_receive0(void)               __attribute__((weak, alias("default_h
 void ISR_CAN1_receive1(void)               __attribute__((weak, alias("default_handler")));
 void ISR_CAN1_SCE(void)                    __attribute__((weak, alias("default_handler")));
 void ISR_EXT_lines_9_to_5(void)            __attribute__((weak, alias("default_handler")));
+void ISR_timer15_global(void)              __attribute__((weak, alias("default_handler")));
+void ISR_timer16_global(void)              __attribute__((weak, alias("default_handler")));
+void ISR_timer17_global(void)              __attribute__((weak, alias("default_handler")));
 void ISR_timer1_capture_compare(void)      __attribute__((weak, alias("default_handler")));
 void ISR_timer2_global(void)               __attribute__((weak, alias("default_handler")));
 void ISR_timer3_global(void)               __attribute__((weak, alias("default_handler")));
@@ -254,7 +256,6 @@ void (* vector_table[])() __attribute__((section(".vector_table"))) = {
     ISR_EXT_line2,
     ISR_EXT_line3,
     ISR_EXT_line4,
-    ISR_EXT_line5,
     ISR_DMA1_channel1,
     ISR_DMA1_channel2,
     ISR_DMA1_channel3,
@@ -268,6 +269,9 @@ void (* vector_table[])() __attribute__((section(".vector_table"))) = {
     ISR_CAN1_receive1,
     ISR_CAN1_SCE,
     ISR_EXT_lines_9_to_5,
+    ISR_timer15_global,
+    ISR_timer16_global,
+    ISR_timer17_global,
     ISR_timer1_capture_compare,
     ISR_timer2_global,
     ISR_timer3_global,
