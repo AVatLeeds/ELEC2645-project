@@ -9,7 +9,6 @@ CFLAGS =	-g0\
 			-mcpu=cortex-m4 \
 			-nostartfiles\
 			-specs=nano.specs\
-			-specs=nosys.specs\
 			-fno-rtti\
 			-fno-exceptions #disabling c++ exception handling as otherwise causes a bunch of missing symbols
 
@@ -33,7 +32,7 @@ firmware.o: startup_stm32l476rg.o project.o
 
 startup_STM32L476RG.o: startup_stm32l476rg.c
 
-project.o: main.cpp systick.cpp USART_driver.cpp GPIO_driver.cpp SPI_driver.cpp
+project.o: main.cpp systick.cpp USART_driver.cpp GPIO_driver.cpp SPI_driver.cpp timers.cpp
 	$(CC) $(CFLAGS) -I. -r -o $@ $^
 # -r produces a relocatable object (partial linking)
 
