@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stddef.h>
+#include <math.h>
 
 #include "status_LED.h"
 #include "system.h"
@@ -85,11 +86,16 @@ void setup_sample_timer()
     sample_timer.start();
 }
 
+void floating_point_test() __attribute__((optimize(0)));
+void floating_point_test()
+{
+    for (float i = 0; i < 10; i ++)
+    {
+        float float_test = 3.1415926 * i;
+    }
+}
+
 #define MAX_SAMPLES 1024
-
-uint16_t signal_samples[MAX_SAMPLES];
-
-uint32_t window_length = 8;
 
 int main(void)
 {
@@ -110,6 +116,13 @@ int main(void)
     ADC_conv.type(PUSH_PULL);
 
     status = YELLOW;
+
+    uint32_t f_cpu = 4000000;
+    uint16_t prescaler;
+    uint16_t thershold;
+    float f_sample = (f_cpu / prescaler);
+
+    floating_point_test();
 
     while (true)
     {
