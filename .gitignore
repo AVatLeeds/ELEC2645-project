@@ -2,9 +2,13 @@ archive_\(initial_findings\)/
 STM32L4_drivers/
 .cache/
 .vscode/
+.VSCodeCounter/
 
 *.o
 *.bin
 *.map
+*.exec
+
+*.~lock.*
 
 *.code-workspace
