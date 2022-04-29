@@ -39,16 +39,23 @@ void pointer_shuffle(float samples[], float * pointers[], int exponent)
         pointers[idx] = &samples[reverse_idx];
     }
 }
+
+#define MAX_EXPONENT    5
     
-float recursive_DFT(float * pointers[], int length, int f)
+float recursive_DFT(float * pointers[], float coefficients[], int exponent, int f)
 {
-    if (length > 2)
+
+    if (exponent > 1)
     {
-        return (recursive_DFT(pointers, length >> 1, f) + (cos((2 * 3.14159 * f) / length) * recursive_DFT(pointers + (length >> 1), length >> 1, f)));
+        //return (recursive_DFT(pointers, length >> 1, f) + (cos((2 * 3.14159 * f) / length) * recursive_DFT(pointers + (length >> 1), length >> 1, f)));
+        return (recursive_DFT(pointers, coefficients,  (exponent - 1), f)\
+         + (coefficients[(f << (MAX_EXPONENT - exponent)) & ((1 << MAX_EXPONENT) - 1)]\
+          * recursive_DFT(pointers + (1 << (exponent - 1)), coefficients,  (exponent - 1), f)));
     }
     else
     {
-        return (*pointers[0] + (cos((2 * 3.14159 * f) / length) * *pointers[1]));
+        //return (*pointers[0] + (cos((2 * 3.14159 * f) / length) * *pointers[1]));
+        return (*pointers[0] + (coefficients[(f << (MAX_EXPONENT - exponent)) & ((1 << MAX_EXPONENT) - 1)] * *pointers[1]));
     }
 }
 
@@ -62,10 +69,19 @@ int main()
     float signal4[NUM_SAMPLES] = {1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0};
     float signal5[NUM_SAMPLES] = {1.2, 1.2, 1.2, 1.2, -0.8, -0.8, -0.8, -0.8, 1.2, 1.2, 1.2, 1.2, -0.8, -0.8, -0.8, -0.8, 1.2, 1.2, 1.2, 1.2, -0.8, -0.8, -0.8, -0.8, 0, 0, 0, 0, 0, 0, 0, 0};
     float signal6[NUM_SAMPLES] = {1, 1, 1, 1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    float * pointers[NUM_SAMPLES];
 
-    float list[NUM_SAMPLES] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
-    pointer_shuffle(signal6, pointers, 5);
+    // create an array of shuffled pointers into the samples array
+    float * pointers[NUM_SAMPLES];
+    pointer_shuffle(signal1, pointers, MAX_EXPONENT);
+
+    // precompute the coefficients
+    float coefficients[NUM_SAMPLES];
+    for (int f = 0; f < NUM_SAMPLES; f ++)
+    {
+        coefficients[f] = cos((2 * 3.14159 * f) / NUM_SAMPLES);
+        printf("%f\n", coefficients[f]);
+    }
+    printf("\n");
 
     for (int i = 0; i < NUM_SAMPLES; i ++)
     {
@@ -75,7 +91,7 @@ int main()
     
     for (int f = 0; f < NUM_SAMPLES; f ++)
     {
-        float component = recursive_DFT(pointers, NUM_SAMPLES, f);
+        float component = recursive_DFT(pointers, coefficients, MAX_EXPONENT, f);
         printf("%f\n", component);
     }
     
