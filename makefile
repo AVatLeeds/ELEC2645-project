@@ -7,6 +7,8 @@ CFLAGS =	-g0\
 			-mthumb\
 			-mno-thumb-interwork \
 			-mcpu=cortex-m4 \
+			-mfloat-abi=hard\
+			-mfpu=fpv4-sp-d16\
 			-nostartfiles\
 			-specs=nano.specs\
 			-fno-rtti\
@@ -24,6 +26,13 @@ STL = st-flash
 #INCLUDE =	-I./STM32CubeL4-1.17.1/Drivers/CMSIS/Core/Include\
 			-I./STM32CubeL4-1.17.1/Drivers/CMSIS/Device/ST/STM32L4xx/Include\
 
+SOURCES =	main.cpp\
+			systick.cpp\
+			USART_driver.cpp\
+			GPIO_driver.cpp\
+			SPI_driver.cpp\
+			timers.cpp\
+
 firmware.bin: firmware.o
 	arm-none-eabi-objcopy -O binary $^ $@
 
@@ -32,9 +41,12 @@ firmware.o: startup_stm32l476rg.o project.o
 
 startup_STM32L476RG.o: startup_stm32l476rg.c
 
-project.o: main.cpp systick.cpp USART_driver.cpp GPIO_driver.cpp SPI_driver.cpp timers.cpp
+project.o: $(SOURCES)
 	$(CC) $(CFLAGS) -I. -r -o $@ $^
 # -r produces a relocatable object (partial linking)
+
+asm_source: $(SOURCES)
+	$(CC) $(CFLAGS) -I. -r -S $^
 
 flash:
 	st-flash erase
@@ -42,4 +54,4 @@ flash:
 	st-flash write firmware.bin 0x08000000
 
 clean:
-	rm *.o firmware.bin firmware.map
+	rm *.o firmware.bin firmware.map *.s
