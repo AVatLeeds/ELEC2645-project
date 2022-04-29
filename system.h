@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+// Reset and clock control registers
+
 #define RCC_BASE        0x40021000
 
 #define RCC_CR          *((volatile uint32_t *)(RCC_BASE + 0x00))
@@ -55,6 +57,23 @@
 // implementing enable and disable for now. More to do.
 #define NVIC_ENABLE_INTERRUPT(IDX)      (NVIC_ISER((IDX >> 5U) & 0b111) |= (1U << (IDX & 0b11111)))
 #define NVIC_DISABLE_INTERRUPT(IDX)     (NVIC_ICER((IDX >> 5U) & 0b111) |= (1U << (IDX & 0b11111)))
+
+// Floating point unit control registers
+
+#define SYSTEM_CONTROL_BLOCK_BASE   0xE000ED00
+
+#define FPU_BASE    0xE000ED88
+
+#define CPACR   *((volatile uint32_t *)(FPU_BASE + 0x00))
+#define FPCCR   *((volatile uint32_t *)(FPU_BASE + 0x04))
+#define FPCAR   *((volatile uint32_t *)(FPU_BASE + 0x08))
+//#define FPSCR   *((volatile uint32_t *)(FPU_BASE + 0x00)) not mapped??
+#define FPDSCR  *((volatile uint32_t *)(FPU_BASE + 0x0C))
+
+
+
+
+
 
 //#define PLL_INPUT_DIVISOR
 //#define PLL_INPUT_MULTIPLIER

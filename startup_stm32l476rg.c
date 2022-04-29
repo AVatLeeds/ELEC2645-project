@@ -376,5 +376,8 @@ void reset_handler(void)
         (*constructor_ptr)();
     }
 
+    // enable floating point coprocessor
+    CPACR |= (0b1111 << 20);
+
     main();
 }
