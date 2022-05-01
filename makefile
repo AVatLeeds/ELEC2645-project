@@ -1,7 +1,7 @@
 CC = arm-none-eabi-g++
 
 CFLAGS =	-g0\
-			-Os\
+			-O2\
 			-Wall\
 			-Wextra\
 			-mthumb\
@@ -32,6 +32,7 @@ SOURCES =	systick.cpp\
 			SPI_driver.cpp\
 			timers.cpp\
 			DAC_driver.cpp\
+			fast_fourier_transform.cpp\
 
 TARGET =	main.cpp
 
