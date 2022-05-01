@@ -5,8 +5,11 @@
 Here is the ongoing work on my project for ELEC 2645.
 
 - To build simply run ```make```
-- to flash the compiled application to the Nucleo L476RG development board run ```make flash```
+- To flash the compiled application to the Nucleo L476RG development board run ```make flash```
 - To clear up all build files run ```make clean```
+
+- To compile to assembler source ```make asm_source```
+- To build a specific test file run ```make TARGET="filename.cpp"```
 
 First, Here are some of the thinks I have learned while working on my project so far.
 
@@ -292,6 +295,50 @@ As mentioned earlier on, as part of the startup process the constructors for any
 The final step that "reset_handler" performs is to call the main function, ```main();```. "main" having previously been declared as ```extern int main(void)``` (since, again, it's address is not known until final link time).
 
 The full startup code can be explored in detail in [startup_stm32l476rg.c](https://github.com/AVatLeeds/ELEC2645-project/blob/master/startup_stm32l476rg.c)
+
+### **Neater register access**
+
+Above I describe a method of register access by creating preprocessor macros containing a cast and dereference of the register address of each register of interest.
+
+This is an adequate method but a more readable, flexible and intuitive interface can be created using C++ structs. It takes advantage of the fact that the elements of a struct will be layed out contiguously in memory when the program is compiled, and the feature of C / C++ bitfields that allows padding of arbitrary bits to be added between struct elements.
+
+Say we have a peripheral which has 5 32-bit wide registers: two control registers, a data output register, a data input register and a status register, with a reserved area of two words before the last two registers. This imaginary peripheral has a base address of 0x100E6800.
+
+A struct can be created that represents the layout of this peripheral in memory:
+
+``` C++
+    struct imaginary_registers
+    {
+        volatile uint32_t control_reg_1;
+        volatile uint32_t control_reg_2;
+        volatile uint32_t data_out_reg;
+        volatile uint32_t :32;
+        volatile uint32_t :32;
+        volatile uint32_t data_in_reg;
+        volatile uint32_t status_reg;
+    };
+```
+The syntax ```uint32_t :32;``` is used to specify padding of length 32-bits (as in a bit field). The width of the reserved area in bits must be specified, as ```uint32_t :0;``` will simply align to the nearest word boundary. Two areas of padding are added to represent the reserved words between the registers.
+
+The members of the struct should again be declared volatile, as their values can change at any time during execution.
+
+To use this struct to access the registers an instantiation is made as follows:
+
+``` C++
+    #define IMAG_PERIPHERAL_BASE    0x100E6800
+
+    volatile struct imaginary_registers * imaginary_peripheral = (struct imaginary_registers *)IMAG_PERIPHERAL_BASE; 
+```
+Now ```imaginary_peripheral``` points to an "imaginary_registers" data structure in memory at the base address of the peripheral. The registers can then be accessed as follows:
+
+``` C++
+    imaginary_peripheral->control_reg_1 = settings;
+    imaginary_peripheral->control_reg_2 = more_settings;
+    imaginary_peripheral->data_out_reg = 42;
+
+    uint32_t received_data = imaginary_peripheral->data_in_reg;
+```
+
 
 
 
