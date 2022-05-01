@@ -12,6 +12,7 @@ CFLAGS =	-g0\
 			-nostartfiles\
 			-specs=nano.specs\
 			-fno-rtti\
+			-fsingle-precision-constant\
 			-fno-exceptions #disabling c++ exception handling as otherwise causes a bunch of missing symbols
 
 LD = arm-none-eabi-ld
