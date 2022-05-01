@@ -33,6 +33,11 @@ void GPIO_pin::clear()
     GPIO_CLEAR_PIN(_port, _pin);
 }
 
+void GPIO_pin::toggle()
+{
+    GPIO_TOGGLE_PIN(_port, _pin);
+}
+
 void GPIO_pin::set_state(bool state)
 {
     GPIO_WRITE_PIN(_port, _pin, state);

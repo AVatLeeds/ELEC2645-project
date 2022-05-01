@@ -98,6 +98,7 @@ class GPIO_pin
     void pull(uint8_t pull_type);
     void set();
     void clear();
+    void toggle();
     void set_state(bool state);
     bool read();
 
