@@ -16,7 +16,7 @@ class FFT
 
     //private:
 
-    float recursive_DFT(uint16_t indicies[], unsigned int exponent, unsigned int f) __attribute__((optimize("-O3")));
+    float recursive_DFT(uint16_t indicies[], unsigned int exponent, unsigned int f);
 
     unsigned int _num_samples = 0;
     unsigned int _FFT_length = 0;

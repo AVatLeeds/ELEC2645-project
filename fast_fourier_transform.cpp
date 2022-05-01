@@ -3,7 +3,7 @@
 
 #include "fast_fourier_transform.h"
 
-#define M_PI    3.14159265358979323846
+#define M_PI    3.14159265358979323846F
 
 void shuffle_indicies(uint16_t indicies[], unsigned int exponent)
 {
@@ -21,10 +21,11 @@ void shuffle_indicies(uint16_t indicies[], unsigned int exponent)
 
 // indicies and exponent must be passed as arguments despite being private members of this class,
 // since they are modified on each recursive function call
-float FFT::recursive_DFT(uint16_t indicies[], unsigned int exponent, unsigned int f)
+inline float FFT::recursive_DFT(uint16_t indicies[], unsigned int exponent, unsigned int f)
 {
     unsigned int shifted_f = (f << (MAX_EXPONENT - exponent));
-    float invertor = ((shifted_f & 0b11000000000000) % 0b11) ? -1.0 : 1.0;
+    //float invertor = ((shifted_f & 0b11000000000000) % 0b11) ? -1.0F : 1.0F;
+    float invert = ((shifted_f & 0b11000000000000) % 0b11);
     unsigned int index_mask = ((1U << (MAX_EXPONENT - 1)) - 1);
     unsigned int coeff_idx = (shifted_f & 0b1000000000000) ? ~(shifted_f - 1) : shifted_f;
     coeff_idx &= index_mask;
@@ -32,11 +33,29 @@ float FFT::recursive_DFT(uint16_t indicies[], unsigned int exponent, unsigned in
     if (exponent > 1)
     {
         exponent --;
-        float even = recursive_DFT(indicies, exponent, f);
-        float odd = recursive_DFT(indicies + (1 << exponent), exponent, f);
-        return even + (odd * invertor * _coefficients[coeff_idx]);
+        //float even = recursive_DFT(indicies, exponent, f);
+        //float odd = recursive_DFT(indicies + (1 << exponent), exponent, f);
+        //return even + (odd * invertor * _coefficients[coeff_idx]);
+        //return recursive_DFT(indicies, exponent, f) + (recursive_DFT(indicies + (1 << exponent), exponent, f) * invertor * _coefficients[coeff_idx]);
+        if (invert)
+        {
+            return recursive_DFT(indicies, exponent, f) - (recursive_DFT(indicies + (1 << exponent), exponent, f) * _coefficients[coeff_idx]);
+        }
+        else
+        {
+            return recursive_DFT(indicies, exponent, f) + (recursive_DFT(indicies + (1 << exponent), exponent, f) * _coefficients[coeff_idx]);
+        }
     }
-    return _samples[indicies[0]] + (_samples[indicies[1]] * invertor * _coefficients[coeff_idx]);
+
+    if (invert)
+    {
+        return _samples[indicies[0]] - (_samples[indicies[1]] * _coefficients[coeff_idx]);
+    }
+    else
+    {
+        return _samples[indicies[0]] + (_samples[indicies[1]] * _coefficients[coeff_idx]);
+    }
+    //return _samples[indicies[0]] + (_samples[indicies[1]] * invertor * _coefficients[coeff_idx]);
 }
 
 FFT::FFT()
@@ -51,9 +70,9 @@ FFT::FFT()
     unsigned int f;
     for (f = 0; f < max_coefficients; f ++)
     {
-        _coefficients[f] = cos((2 * M_PI * static_cast<float>(f)) / static_cast<float>(max_FFT_length));
+        _coefficients[f] = cos((2.0F * M_PI * static_cast<float>(f)) / static_cast<float>(max_FFT_length));
     }
-    _coefficients[f] = 0.0;
+    _coefficients[f] = 0.0F;
 }
 
 void FFT::setup(float samples[], unsigned int num_samples)
