@@ -4,7 +4,7 @@
 
 DAC_driver::DAC_driver()
 {
-    registers = (struct DAC_registers * )DAC_BASE;
+    registers = (struct DAC_registers *)DAC_BASE;
     RCC_APB1ENR1 |= (1U << 29);
 }
 
