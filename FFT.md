@@ -128,15 +128,22 @@ So the only unique values of the sum down here at the bottom of the recursion ar
 <img src="https://render.githubusercontent.com/render/math?math={\large \color{white} even:\ s[0], s[4]\ \ \ \ \ odd:\  s[2], s[6]\ \ \ \ \ even:\ s[1], s[5]\ \ \ \ \ odd:\ s[3], s[7]}#gh-dark-mode-only">
 </div>
 <br/>
+The resulting shuffled sequence is:
+
+</br>
 <div style = "text-align:center">
 <img src="https://render.githubusercontent.com/render/math?math={\large shuffled\ sequence = s[0], s[4], s[2], s[6], s[1], s[5], s[3], s[7]}#gh-light-mode-only">
-<img src="https://render.githubusercontent.com/render/math?math={\large \color{white} shuffled\ sequence = s[0], s[4], s[2], s[6], s[1], s[5], s[3], s[7]}#gh-dark-mode-only">
+<img src="https://render.githubusercontent.com/render/math?math={\large \color{white} s[0], s[4], s[2], s[6], s[1], s[5], s[3], s[7]}#gh-dark-mode-only">
 </div>
 <br/>
 
 The periodicity in the results of the DFT in f can be exploited at each level up the recursion until the very top. Though hopefully the explanation above provides some insight the process is rather difficult to put into words. Helpfully it can be visulaised using a "butterfly diagram". The following butterfly diagram shows the stages of computing the FFT for an input sequence of 16 samples. At each stage the frequency components are calculated as the sum of the even component from the previous stage and a coefficient 
 <img src="https://render.githubusercontent.com/render/math?math={e^{-2 \pi j {{f \over N}}}}#gh-light-mode-only">
 <img src="https://render.githubusercontent.com/render/math?math={\color{white} e^{-2 \pi j {{f \over N}}}}#gh-dark-mode-only"> multiplied by the odd component. PICTURE
+
+### **Implementation details**
+
+
 
 
 <img src="https://render.githubusercontent.com/render/math?math={ }#gh-light-mode-only">

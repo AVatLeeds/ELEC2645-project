@@ -5,6 +5,7 @@
 
 #define M_PI    3.14159265358979323846F
 
+// reverses the bits of each index and stores the result in the indices array
 void shuffle_indicies(uint16_t indicies[], unsigned int exponent)
 {
     for (unsigned int idx = 0; idx < (1U << exponent); idx ++)
@@ -58,97 +59,9 @@ inline float FFT::recursive_DFT(uint16_t indicies[], unsigned int exponent, unsi
     //return _samples[indicies[0]] + (_samples[indicies[1]] * invertor * _coefficients[coeff_idx]);
 }
 
-//inline void FFT::compute_FFT(uint16_t indicies[], unsigned int width)
-//{
-//    if (width > 2)
-//    {
-//        //descend the recursion
-//        width --;
-//        compute_FFT(indicies, width);
-//        compute_FFT(indicies + (1 << width), width);
-//
-//        //ascend back up the recursion collecting terms as we go
-//    }
-//    else
-//    {
-//        // we have reached the bottom of the recursion
-//        float even = _samples[_indicies[0]] + _samples[_indicies[1]];
-//        float odd = _samples[_indicies[0]] - _samples[_indicies[1]];
-//
-//        //populate all the even frequency terms
-//        for (unsigned int f = 0; f < _FFT_out_length; f += 2)
-//        {
-//            _samples[f] = even;
-//        }
-//
-//        //populate all the odd frequency terms
-//        for (unsigned int f = 1; f < _FFT_out_length; f += 2)
-//        {
-//            _samples[f] = odd;
-//        }
-//    }
-//}
-
-//void FFT::compute_FFT(unsigned int width)
-//{
-//    if (width > 2)
-//    {
-//        //descend the recursion
-//        compute_FFT(--width);
-//
-//        unsigned int offset = 1U << (width - 2);
-//        unsigned int index_mask = ((1U << (MAX_EXPONENT - 1)) - 1);
-//
-//        for (unsigned int f = 0; f < _FFT_in_length; f ++)
-//        {
-//            //unsigned int shifted_f = (f << (MAX_EXPONENT - width));
-//            //float invert = ((shifted_f & 0b11000000000000) % 0b11);
-//            //unsigned int coeff_idx = (shifted_f & 0b1000000000000) ? ~(shifted_f - 1) : shifted_f;
-//            //coeff_idx &= index_mask;
-//            if (f & offset)
-//            {
-//                _samples[f] = _samples[f - offset] - (cos((-2.0 * M_PI * f) / _FFT_in_length) * _samples[f]); 
-//            }
-//            else
-//            {
-//                _samples[f] = _samples[f] + (cos((-2.0 * M_PI * f) / _FFT_in_length) * _samples[f + offset]);
-//            }
-//        }
-//
-//        //ascend back up the recursion collecting terms as we go
-//    }
-//    else if (width > 1)
-//    {
-//        compute_FFT(--width);
-//        // this layer takes advantage of a special case that
-//        // 4 evenly spaced points on the unit circle yield coefficients
-//        // with real part 1.0, 0,0, -1.0 and 0.0
-//        for (unsigned int f = 0; f < _FFT_in_length; f += 4)
-//        {
-//            float sum = _samples[f] + _samples[f + 2];
-//            _samples[f] = sum;
-//            _samples[f + 2] = sum;
-//        }
-//    }
-//    else
-//    {
-//        // we have reached the bottom of the recursion
-//        // overwrite the entries in the samples sequence with their sums and their differences
-//        for (unsigned int f = 0; f < _FFT_in_length; f += 2)
-//        {
-//            unsigned int even_idx = _indicies[f];
-//            unsigned int odd_idx = _indicies[f + 1];
-//            float sum = _samples[even_idx] + _samples[odd_idx];
-//            float diff = _samples[even_idx] - _samples[odd_idx];
-//            _samples[f] = sum;
-//            _samples[f + 1] = diff;
-//        }
-//    }
-//}
-
-void FFT::compute_FFT(unsigned int fft_width)
+float * FFT::compute_FFT()
 {
-    // overwrite the entries in the samples sequence with their sums and their differences
+    // populate the results array with the sums and differences of each pair of shuffled samples
     for (unsigned int f = 0; f < _FFT_in_length; f += 2)
     {
         unsigned int even_idx = _indicies[f];
@@ -156,9 +69,8 @@ void FFT::compute_FFT(unsigned int fft_width)
         _results[f] = _samples[even_idx] + _samples[odd_idx];
         _results[f + 1] = _samples[even_idx] - _samples[odd_idx];
     }
-    // a second pass over the array takes advantage of a special case that
-    // 4 evenly spaced points on the unit circle yield coefficients
-    // with real part 1.0, 0,0, -1.0 and 0.0
+    // a second pass over the array takes advantage of a special case that 4 evenly spaced points
+    // on the unit circle yield coefficients with real part 1.0, 0,0, -1.0 and 0.0
     for (unsigned int f = 0; f < _FFT_in_length; f += 4)
     {
         float sum = _results[f] + _results[f + 2];
@@ -166,10 +78,13 @@ void FFT::compute_FFT(unsigned int fft_width)
         _results[f] = sum;
         _results[f + 2] = diff;
     }
-    
+    // the two for loops above take care of the conditions that would be width = 0 and width = 1
     unsigned int width = 2;
-    while (width < fft_width)
+    // each value of width here is equivalent to a layer on the butterfly diagrem.
+    while (width < _FFT_in_width)
     {
+        // this value is used to shift (raise to a power of 2) the frequency component f so that
+        // it correctly sub-samples the coefficients array
         unsigned int coeff_shift = MAX_EXPONENT - (width + 1);
         unsigned int offset = (1U << width);
         for (unsigned int f = 0; f < _FFT_in_length; f ++)
@@ -185,9 +100,9 @@ void FFT::compute_FFT(unsigned int fft_width)
         }
         width ++;
     }
+
+    return _results;
 }
-
-
 
 FFT::FFT()
 {
@@ -197,8 +112,7 @@ FFT::FFT()
     // Precomputing the coefficients in this way discards any of the complex (phase) information in the FFT. Might change this later.
     // The iterator f represents the frequency component.
     unsigned int max_FFT_length = 1U << MAX_EXPONENT;
-    unsigned int f;
-    for (f = 0; f < _num_coefficients; f ++)
+    for (unsigned int f = 0; f < _num_coefficients; f ++)
     {
         _coefficients[f] = cos((2.0F * M_PI * static_cast<float>(f)) / static_cast<float>(max_FFT_length));
     }
@@ -214,8 +128,6 @@ void FFT::setup(float samples[], unsigned int num_samples)
         _FFT_in_width ++;
     }
     _FFT_in_length = (1U << _FFT_in_width);
-    _FFT_out_width = _FFT_in_width - 1;
-    _FFT_out_length = (1U << _FFT_out_width);
     shuffle_indicies(_indicies, _FFT_in_width);
 }
     
