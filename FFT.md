@@ -132,7 +132,7 @@ The resulting shuffled sequence is:
 
 </br>
 <div style = "text-align:center">
-<img src="https://render.githubusercontent.com/render/math?math={\large shuffled\ sequence = s[0], s[4], s[2], s[6], s[1], s[5], s[3], s[7]}#gh-light-mode-only">
+<img src="https://render.githubusercontent.com/render/math?math={\large s[0], s[4], s[2], s[6], s[1], s[5], s[3], s[7]}#gh-light-mode-only">
 <img src="https://render.githubusercontent.com/render/math?math={\large \color{white} s[0], s[4], s[2], s[6], s[1], s[5], s[3], s[7]}#gh-dark-mode-only">
 </div>
 <br/>
