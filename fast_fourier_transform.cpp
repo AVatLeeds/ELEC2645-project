@@ -108,7 +108,7 @@ FFT::FFT()
 {
     // precompute coefficients for the maximum FFT length
     // The FFT length is represented by an exponent, since it must alway be a power of 2
-    // To save memory and exploint the symetries of the coefficients calculation, only a quater of the coefficients are calculated.
+    // To save memory and exploint the symetries of the coefficients calculation, only half of the coefficients are calculated.
     // Precomputing the coefficients in this way discards any of the complex (phase) information in the FFT. Might change this later.
     // The iterator f represents the frequency component.
     unsigned int max_FFT_length = 1U << MAX_EXPONENT;
