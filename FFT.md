@@ -24,25 +24,40 @@ Consider a sequence of samples "s" of length N, where any particular sample is f
 This is a sum over all the samples in the input sequence, multiplied by a complex exponential coefficient, at a particular frequency.
 
 To understand what the DFT is doing Consider a series of samples of a cosine wave:
-PICTURE
+<div align="center">
+<img src="./documentation/input_samples.png" alt="input samples" width="700">
+</div>
 
 If the samples are viewed on the complex plane, multiplying the value of each sample by 
 <img src="https://render.githubusercontent.com/render/math?math={ e^{-2 \pi j {n \over N}}}#gh-light-mode-only">
 <img src="https://render.githubusercontent.com/render/math?math={\color{white} e^{-2 \pi j {n \over N}}}#gh-dark-mode-only">
-rotates it anticlockwise through an angle that is equivalent to it's position in the sample sequence. PICTURE
+rotates it anticlockwise through an angle that is equivalent to it's position in the sample sequence.
 
-Doing this for each sample spreads the samples out with equal spacing around the unit circle on the complex plane. PICTURE
+<div align="center">
+<img src="./documentation/angle.png" alt="complex rotation" width="500">
+</div>
 
-The sum is the same as adding up all of these vectors and finding their end point. PICTURE
+Doing this for each sample spreads the samples out with equal spacing around the unit circle on the complex plane.
+
+<div align="center">
+<img src="./documentation/wrapped_samples.png" alt="rotated sample" width="500">
+</div>
+
+The sum is the same as adding up all of these vectors and finding their end point.
+
+<div align="center">
+<img src="./documentation/1_revolution.png" alt="vector sum, f = 1" width="500">
+</div>
 
 the value of f in the DFT represents the number of rotations through wich the points are wrapped around the complex plane. For instance if f = 1 the points will be spread evenly over one revolution, if f = 2 the points will be spread evenly over two revolutions (when f = 0 all of the vectors are simply added together end to end with no rotation, this represents the DC component of the signal).
 
-f can be seen as the frequency component of the signal currently being analysed. The number of times the points are wrapped around will change the ultimate value of the sum, the result of which represents "how much" of the signal is present at that particular frequency.
+f can be seen as the frequency component of the signal currently being analysed. The number of times the points are wrapped around will change the ultimate value of the sum, the real part of which represents "how much" of the signal is present at that particular frequency.
 
+<div align="center">
+<img src="./documentation/2_revolution.png" alt="vector sum, f = 2" width="500">
+</div>
 
-
-
-**Back to the explanation of the FFT**. It turns out that the DFT sum is exactly equivalent to first taking the sum of all the even terms in the sequence, then the sum of all the odd terms and then adding these sums together.
+It turns out that the DFT sum is exactly equivalent to first taking the sum of all the even terms in the sequence, then the sum of all the odd terms and then adding these sums together.
 
 <br/>
 <div style = "text-align:center">
@@ -139,13 +154,27 @@ The resulting shuffled sequence is:
 </div>
 <br/>
 
-The periodicity in the results of the DFT in f can be exploited at each level up the recursion until the very top.
-
-REWRITE THIS -> Though hopefully the explanation above provides some insight the process is rather difficult to put into words. Helpfully it can be visulaised using a "butterfly diagram". The following butterfly diagram shows the stages of computing the FFT for an input sequence of 16 samples. At each stage the frequency components are calculated as the sum of the even component from the previous stage and a coefficient 
+The periodicity in the results of the DFT in f can be exploited at each level up the recursion until the very top. The method for doing so is rather difficult to put into words, but can be explained more easily using a "butterfly diagram". The following butterfly diagram shows the stages of computing the FFT for an input sequence of 16 samples. At each stage the frequency components are calculated as the sum of the even component from the previous stage and a coefficient 
 <img src="https://render.githubusercontent.com/render/math?math={e^{-2 \pi j {{f \over N}}}}#gh-light-mode-only">
-<img src="https://render.githubusercontent.com/render/math?math={\color{white} e^{-2 \pi j {{f \over N}}}}#gh-dark-mode-only"> multiplied by the odd component. PICTURE
+<img src="https://render.githubusercontent.com/render/math?math={\color{white} e^{-2 \pi j {{f \over N}}}}#gh-dark-mode-only"> multiplied by the odd component. 
 
+<div align="center">
+<img src="./documentation/butterfly.png" alt="butterfly diagram" width="700">
+</div>
 
+The coefficients in the diagram above are represented as
+
+</br>
+<div style = "text-align:center">
+<img src="https://render.githubusercontent.com/render/math?math={\LARGE Z_N = e^{ -j \frac{2 \pi}{N}}}#gh-light-mode-only">
+<img src="https://render.githubusercontent.com/render/math?math={\LARGE \color{white} Z_N = e^{ -j \frac{2 \pi}{N}}}#gh-dark-mode-only">
+</div>
+<br/>
+
+The butterfly diagram shows all of the unique calculations that must be performed on the 16 input samples to get the 16 frequency components at the output. In total there are 64 sums / differences that have to be performed, which is exactly
+<img src="https://render.githubusercontent.com/render/math?math={ N \log_2 N }#gh-light-mode-only">
+<img src="https://render.githubusercontent.com/render/math?math={\color{white} N \log_2 N }#gh-dark-mode-only">
+of N = 16.
 
 ## **Implementation details**
 
