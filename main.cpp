@@ -9,6 +9,8 @@
 #include "USART_driver.h"
 #include "SPI_driver.h"
 #include "timers.h"
+#include "DAC_driver.h"
+#include "fast_fourier_transform.h"
 
 // temporary for experiments only
 void nop() __attribute__((optimize(0)));
@@ -17,13 +19,15 @@ void nop()
     __asm__("nop");
 }
 
-status_LED status(PORTB, 3, 4, 5);
+status_LED status(PORTA, 13, 15, 14);
 
 USART_driver uart(USART_2, 115200);
 
 SPI_driver SPI(SPI1);
 
 Basic_timer sample_timer(TIMER6);
+
+DAC_driver DAC;
 
 void setup_uart_pins() // this needs to go in the USART class constructor when I have time
 {
@@ -42,25 +46,23 @@ void setup_uart_pins() // this needs to go in the USART class constructor when I
 
 void setup_SPI()
 {
-    /* on the STM32L476RG SPI1 is available as alternate function 5 on a number of pins.
-    I have chosen these ones:
-        - NSS - PA4
-        - SCK - PA5
-        - MISO - PA6
-        - MOSI - PA7
+    /* SPI pins moved to port B to avoid conflict with DAC outputs
+        - SCK - PB3
+        - MISO - PB4
+        - MOSI - PB5
     */
 
-    GPIO_ENABLE(PORTA);
+    GPIO_ENABLE(PORTB);
 
     //GPIO_SET_MODE(PORTA, 4, ALTERNATE_FUNCTION); NSS functionality not needed for ADC
-    GPIO_SET_MODE(PORTA, 5, ALTERNATE_FUNCTION);
-    GPIO_SET_MODE(PORTA, 6, ALTERNATE_FUNCTION);
-    GPIO_SET_MODE(PORTA, 7, ALTERNATE_FUNCTION);
+    GPIO_SET_MODE(PORTB, 3, ALTERNATE_FUNCTION);
+    GPIO_SET_MODE(PORTB, 4, ALTERNATE_FUNCTION);
+    GPIO_SET_MODE(PORTB, 5, ALTERNATE_FUNCTION);
 
     //GPIO_SET_ALTERNATE_FUNCTION(PORTA, 4, 5); NSS functionality not needed for ADC
-    GPIO_SET_ALTERNATE_FUNCTION(PORTA, 5, 5);
-    GPIO_SET_ALTERNATE_FUNCTION(PORTA, 6, 5);
-    GPIO_SET_ALTERNATE_FUNCTION(PORTA, 7, 5);
+    GPIO_SET_ALTERNATE_FUNCTION(PORTB, 3, 5);
+    GPIO_SET_ALTERNATE_FUNCTION(PORTB, 4, 5);
+    GPIO_SET_ALTERNATE_FUNCTION(PORTB, 5, 5);
 
     SPI.baud_rate_divisor(0); // this is actually a divisor of 2. Update the method so that the numbers match
     SPI.clock_polarity(1);
@@ -79,26 +81,23 @@ void setup_sample_timer()
 {
     sample_timer.interrupt_on_update(true);
     sample_timer.remap_update_interrupt_flag_to_count(true);
-    sample_timer.set_prescaler(65535);
-    sample_timer.set_threshold(61);
+    sample_timer.set_prescaler(4); // prescale down to 1 MHz
+    sample_timer.set_threshold(25); // timer threshold divides by a further 25, to get 40 KHz
     sample_timer.clear_update_interrupt_flag();
-    NVIC_ENABLE_INTERRUPT(54); // enable timer 6 global interrupt vector
     sample_timer.start();
 }
 
-void floating_point_test() __attribute__((optimize(0)));
-void floating_point_test()
-{
-    for (float i = 0; i < 10; i ++)
-    {
-        float float_test = 3.1415926 * i;
-    }
-}
-
-#define MAX_SAMPLES 1024
+#define NUM_SAMPLES 1024
+// these need to be visible to the ISR
+volatile bool display_flag = false; // can be changed by the ISR
+volatile unsigned int sample_idx = 0; // can be changed by the ISR
+volatile float samples[NUM_SAMPLES];
+GPIO_pin ADC_conv(PORTA, 0);
 
 int main(void)
 {
+    float * results;
+
     systick_init();
     setup_uart_pins();
     setup_SPI(); 
@@ -109,43 +108,68 @@ int main(void)
 
     setup_sample_timer();
 
-    uart.print_register("NVIC", NVIC_ISER(1));
-
-    GPIO_pin ADC_conv(PORTA, 4);
     ADC_conv.mode(OUTPUT);
     ADC_conv.type(PUSH_PULL);
 
-    status = YELLOW;
+    GPIO_pin display_trigger(PORTA, 1);
+    display_trigger.mode(OUTPUT);
+    display_trigger.clear();
 
-    uint32_t f_cpu = 4000000;
-    uint16_t prescaler;
-    uint16_t thershold;
-    float f_sample = (f_cpu / prescaler);
+    status = YELLOW; // general setup complete
 
-    floating_point_test();
+    DAC.mode_normal(CH1, false, false);
+    DAC.enable(CH1);
+
+    FFT FFT;
+
+    status = BLUE; // FFT coefficients computed
+
+    FFT.setup(samples, NUM_SAMPLES);
+
+    status = CYAN; // sample indicies shuffled
+
+    sample_timer.clear_update_interrupt_flag();
+    NVIC_ENABLE_INTERRUPT(54); // enable timer 6 global interrupt vector
 
     while (true)
     {
-        // ADC minimum conversion time is 225 ns so one or to nops should be sufficient delay
-        // this is only a temporary solution
-        // nevermind. GPIO function are very sluggish :(
-        // this takes a whole 5 us. Needs optimising. inline?
-        ADC_conv.set();
-        ADC_conv.clear();
-
-        SPI.registers->data_reg = 0x0000;
-        //uart.print_register("SPI status reg", SPI.registers->status_reg);
-        uint16_t data = SPI.registers->data_reg;
-        //uart.print_in_hex(data >> 8);
-        //uart.print_in_hex(data);
-        //uart.newline();
-        uart.print_register("count", data);
+        if (display_flag)
+        {
+            status = YELLOW;
+            display_trigger.toggle(); // set trigger before computing FFT
+            results = FFT.compute_FFT();
+            display_trigger.toggle(); // clear trigger after computing FFT
+            //display the samples
+            for (unsigned int f = 0; f < NUM_SAMPLES; f ++)
+            {
+                //DAC.registers->CH1_data_reg_12bit_right_allign = (uint16_t)((samples[f] * 100) + 100);
+                DAC.registers->CH1_data_reg_12bit_right_allign = (uint16_t)((results[f] * 100) + 1);
+            }
+            display_flag = false;
+            NVIC_ENABLE_INTERRUPT(54); // enable timer 6 global interrupt vector
+            status = GREEN;
+        }
     }
 }
 
 void ISR_timer6_global(void)
 {
-    sample_timer.clear_update_interrupt_flag();
-    status = ~status.get_status();
-    uart.print_string("In ISR!\n");
+    sample_timer.clear_update_interrupt_flag(); // don't forget to clear the interrupt flag when done!
+    if (sample_idx < NUM_SAMPLES)
+    {
+        
+        ADC_conv.set();
+        ADC_conv.clear();
+        SPI.registers->data_reg = 0x0000;
+        uint16_t SPI_data = SPI.registers->data_reg;
+        int value = static_cast<int>(SPI_data) - (1U << 13) - 1; // center the 14-bit value around zero
+        samples[sample_idx] = (static_cast<float>(value) / ((1U << 13) - 1)); // scale the data between -1.0 and 1.0
+        sample_idx ++;
+    }
+    else
+    {
+        sample_idx = 0;
+        display_flag = true;
+        NVIC_DISABLE_INTERRUPT(54); // disable timer 6 global interrupt vector
+    }
 }

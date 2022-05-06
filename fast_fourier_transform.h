@@ -11,7 +11,7 @@ class FFT
 
     FFT();
 
-    void setup(float samples[], unsigned int num_samples);
+    void setup(volatile float samples[], unsigned int num_samples);
     float compute_component(unsigned int f);
     float * compute_FFT();
 
@@ -30,7 +30,7 @@ class FFT
     // should probably be externally linked but this will do for now.
     float _coefficients[1U << (MAX_EXPONENT - 1)];
     uint16_t _indicies[1U << MAX_EXPONENT];
-    float * _samples;
+    volatile float * _samples;
     float _results[1U << MAX_EXPONENT];
 };
 

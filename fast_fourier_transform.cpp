@@ -118,7 +118,7 @@ FFT::FFT()
     }
 }
 
-void FFT::setup(float samples[], unsigned int num_samples)
+void FFT::setup(volatile float samples[], unsigned int num_samples)
 {
     _samples = samples;
     _num_samples = num_samples; 
