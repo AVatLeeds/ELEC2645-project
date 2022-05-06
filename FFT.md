@@ -178,13 +178,13 @@ of N = 16.
 
 ## **Implementation details**
 
-There are a number of optimisations that I have made in my implementation of the FFT so as to get reasonable performance on the STM32 Nucleo development board. The first is to exploit the fact that the stm32l476rg microcontroller has a built in floating point co-processor.
+There are a number of optimisations that I have made in my implementation of the FFT, so as to get reasonable performance on the STM32 Nucleo development board. The first is to exploit the fact that the stm32l476rg microcontroller has a built in floating point co-processor.
 
 ### **Floating Point Unit**
 
 The Cortex-M4 Floating Point Unit (FPU) is only capable of single precision arithmetic (32-bit wide floating point values) but has high performance, being able to do floating point addition and subtraction in a single cycle and floating point multiply-add / multiply-subtract in only three cycles.
 
-Enabling the FPU id done simply by writing four bits in the "Coprocessor access control register" (CPACR) when the microprocessor boots.
+Enabling the FPU is done simply by writing four bits in the "Coprocessor access control register" (CPACR) when the microprocessor boots.
 
 ```C++
     CPACR |= (0b1111 << 20);
@@ -212,9 +212,16 @@ my FFT library, [fast_fourier_transform.cpp](https://github.com/AVatLeeds/ELEC26
         }
     }
 ```
-As I showed in my explanation of the mathematics complex exponential "coefficients" can be factored out of the recursive DFT. The nice thing is that these coefficients can be computed up-front, saving many floating point operation inside the actual FFT computation. Indeed, all that is needed is to calculate an array of these coefficients, as long as the maximum FFT length, when the class is instantiated. This only needs to be done once.
+As I showed in my explanation of the mathematics complex exponential "coefficients" can be factored out of the recursive DFT. The nice thing is that these coefficients can be computed up-front, saving many floating point operation inside the actual FFT computation. Indeed, all that is needed is to calculate an array of these coefficients that is as long as the maximum FFT length when the class is constructed. This only needs to be done once.
 
 In my FFT implementation I am presently only interested in the real component of the results (the FFT produces complex values, the imaginary part representing phase information). This means I can simplify the complex exponential coefficient down to a simple calculation using the cosine to get the real part of the coefficient.
+
+</br>
+<div style = "text-align:center">
+<img src="https://render.githubusercontent.com/render/math?math={\LARGE \Re(e^{ -2 \pi j \frac{f}{N}}) = \cos(2 \pi \frac{f}{N})}#gh-light-mode-only">
+<img src="https://render.githubusercontent.com/render/math?math={\LARGE \color{white} \Re(e^{ -2 \pi j \frac{f}{N}}) = \cos(2 \pi \frac{f}{N})}#gh-dark-mode-only">
+</div>
+<br/>
 
 The next step in using the library is to call the "setup" method to set the length of the FFT and provide a pointer to the input samples.
 
@@ -233,7 +240,7 @@ The next step in using the library is to call the "setup" method to set the leng
     }
 ```
 
-The setup function uses a while loop to calculate the maximum bit width required to encompass the number of input samples specified (The size of the FFT must be a power of 2 for the algorithm to work correctly). It then calls "shuffle_indices". In the mathematical explanation I mentioned that splitting the even and odd terms of the sample sequence repeatedly causes the values in the sample sequence to become "shuffled". It turns out that the positions that the samples would be moved to in the shuffling process ar the exact bit reversal of their original index. For instance:
+The setup function uses a while loop to calculate the maximum bit width required to encompass the number of input samples specified (The size of the FFT must be a power of 2 for the algorithm to work correctly). It then calls "shuffle_indices". In the mathematical explanation I mentioned that splitting the even and odd terms of the sample sequence repeatedly causes the values in the sample sequence to become "shuffled". It turns out that the positions that the samples would be moved to in the shuffling process are the exact bit reversal of their original index. For instance:
 
 | sample index | in binary | bits reversed | shuffled index |
 |--------------|:---------:|:-------------:|:--------------:|
@@ -330,9 +337,24 @@ The ```compute_FFT``` method returns a pointer to a private array of floating po
     }
 ```
 
+There are a few more optimisations that I have managed to squeeze into my final implementation of the FFT. For example, I have removed the recursion. This saves the overhead of a recursive function call, whereby the current state of the function has to be saved on the stack before descending into the next layer of the recursion. This only represents a small overhead but over many function calls it adds up.
 
+My implementation is a so-called "compute in place" FFT, meaning, with each iteration, the results are stored stored back into the same ```_results``` array, overwriting the results from the previous layer. This saves the memory overhead of having to have multiple buffers in RAM for the source data and results.
 
+There is a neat optimisation at the second layer of the FFT (the second for loop) which takes advantage of the fact that for four evenly spaced points on the unit circle the real part of two of the points is zero, so these terms do not need to be calculated.
 
+There are still a few small bugs remaining in my impementation and probably still plenty of room for further optimisations.
+
+### **Results**
+
+Here's a picture of my FFT algorithm computing and displaying a 1024 point FFT of some square wave data.
+
+<div align="center">
+<img src="./documentation/result.jpg" alt="result display" width="700">
+</div>
+<br/>
+
+(Note the symmetry. In accordance with the Nyquist Criterion the FFT only produces unique values for the frequency components up to f = N / 2, after which the spectrum is mirrored.)
 
 <img src="https://render.githubusercontent.com/render/math?math={ }#gh-light-mode-only">
 <img src="https://render.githubusercontent.com/render/math?math={\color{white} }#gh-dark-mode-only">
