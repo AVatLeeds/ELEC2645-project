@@ -25,7 +25,7 @@ This is a sum over all the samples in the input sequence, multiplied by a comple
 
 To understand what the DFT is doing Consider a series of samples of a cosine wave:
 <div align="center">
-<img src="./documentation/input_samples.png" alt="input samples" width="700">
+<img src="https://raw.githubusercontent.com/AVatLeeds/ELEC2645-project/master/documentation/input_samples.png" alt="input samples" width="700">
 </div>
 
 If the samples are viewed on the complex plane, multiplying the value of each sample by 
@@ -34,19 +34,19 @@ If the samples are viewed on the complex plane, multiplying the value of each sa
 rotates it anticlockwise through an angle that is equivalent to it's position in the sample sequence.
 
 <div align="center">
-<img src="./documentation/angle.png" alt="complex rotation" width="500">
+<img src="https://raw.githubusercontent.com/AVatLeeds/ELEC2645-project/master/documentation/angle.png" alt="complex rotation" width="500">
 </div>
 
 Doing this for each sample spreads the samples out with equal spacing around the unit circle on the complex plane.
 
 <div align="center">
-<img src="./documentation/wrapped_samples.png" alt="rotated sample" width="500">
+<img src="https://raw.githubusercontent.com/AVatLeeds/ELEC2645-project/master/documentation/wrapped_samples.png" alt="rotated sample" width="500">
 </div>
 
 The sum is the same as adding up all of these vectors and finding their end point.
 
 <div align="center">
-<img src="./documentation/1_revolution.png" alt="vector sum, f = 1" width="500">
+<img src="https://raw.githubusercontent.com/AVatLeeds/ELEC2645-project/master/documentation/1_revolution.png" alt="vector sum, f = 1" width="500">
 </div>
 
 the value of f in the DFT represents the number of rotations through wich the points are wrapped around the complex plane. For instance if f = 1 the points will be spread evenly over one revolution, if f = 2 the points will be spread evenly over two revolutions (when f = 0 all of the vectors are simply added together end to end with no rotation, this represents the DC component of the signal).
@@ -54,7 +54,7 @@ the value of f in the DFT represents the number of rotations through wich the po
 f can be seen as the frequency component of the signal currently being analysed. The number of times the points are wrapped around will change the ultimate value of the sum, the real part of which represents "how much" of the signal is present at that particular frequency.
 
 <div align="center">
-<img src="./documentation/2_revolution.png" alt="vector sum, f = 2" width="500">
+<img src="https://raw.githubusercontent.com/AVatLeeds/ELEC2645-project/master/documentation/2_revolution.png" alt="vector sum, f = 2" width="500">
 </div>
 
 It turns out that the DFT sum is exactly equivalent to first taking the sum of all the even terms in the sequence, then the sum of all the odd terms and then adding these sums together.
@@ -159,7 +159,7 @@ The periodicity in the results of the DFT in f can be exploited at each level up
 <img src="https://render.githubusercontent.com/render/math?math={\color{white} e^{-2 \pi j {{f \over N}}}}#gh-dark-mode-only"> multiplied by the odd component. 
 
 <div align="center">
-<img src="./documentation/butterfly.png" alt="butterfly diagram" width="700">
+<img src="https://raw.githubusercontent.com/AVatLeeds/ELEC2645-project/master/documentation/butterfly.png" alt="butterfly diagram" width="700">
 </div>
 
 The coefficients in the diagram above are represented as
@@ -350,7 +350,7 @@ There are still a few small bugs remaining in my impementation and probably stil
 Here's a picture of my FFT algorithm computing and displaying a 1024 point FFT of some square wave data.
 
 <div align="center">
-<img src="./documentation/result.jpg" alt="result display" width="700">
+<img src="https://raw.githubusercontent.com/AVatLeeds/ELEC2645-project/master/documentation/result.jpg" alt="result display" width="700">
 </div>
 <br/>
 
