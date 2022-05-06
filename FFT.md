@@ -355,11 +355,3 @@ Here's a picture of my FFT algorithm computing and displaying a 1024 point FFT o
 <br/>
 
 (Note the symmetry. In accordance with the Nyquist Criterion the FFT only produces unique values for the frequency components up to f = N / 2, after which the spectrum is mirrored.)
-
-<img src="https://render.githubusercontent.com/render/math?math={ }#gh-light-mode-only">
-<img src="https://render.githubusercontent.com/render/math?math={\color{white} }#gh-dark-mode-only">
-
-<div style = "text-align:center">
-<img src="https://render.githubusercontent.com/render/math?math={\large }#gh-light-mode-only">
-<img src="https://render.githubusercontent.com/render/math?math={\large \color{white} }#gh-dark-mode-only">
-</div>
